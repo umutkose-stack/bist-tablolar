@@ -378,19 +378,20 @@ def process(symbol: str, name: str = "") -> dict | None:
 def build_sector_map() -> dict[str, dict]:
     """TradingView tarayıcısından tüm BIST hisselerinin sektör/alt sektörü (tek istek)."""
     from tradingview_screener import Query
-    from sectors_tr import tr_label
+    from sectors_tr import INDUSTRY_TR, tr_label
     _, df = (Query().set_markets("turkey").select("name", "sector", "industry")
              .limit(3000).get_scanner_data())
     out: dict[str, dict] = {}
     unmapped = set()
     for _, r in df.iterrows():
         sym = str(r.get("name") or str(r["ticker"]).split(":")[-1]).upper()
-        label, main = tr_label(r.get("sector"), r.get("industry"))
+        sec = r.get("sector") if isinstance(r.get("sector"), str) else None
+        ind = r.get("industry") if isinstance(r.get("industry"), str) else None
+        label, main = tr_label(sec, ind)
         if label:
-            out[sym] = {"sector": label, "sector_main": main, "industry_en": r.get("industry")}
-            from sectors_tr import INDUSTRY_TR
-            if r.get("industry") and r.get("industry") not in INDUSTRY_TR:
-                unmapped.add(r.get("industry"))
+            out[sym] = {"sector": label, "sector_main": main}
+            if ind and ind not in INDUSTRY_TR:
+                unmapped.add(ind)
     print(f"Sektör: {len(out)} hisse eşlendi; çevrilmemiş alt sektörler: {sorted(unmapped)[:30]}", flush=True)
     return out
 
