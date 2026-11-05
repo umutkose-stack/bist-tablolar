@@ -5,6 +5,11 @@ on:
     # Her gün 19:17 (TR saati 22:17) - bilanço dönemlerinde yeni açıklamaları yakalar
     - cron: "17 19 * * *"
   workflow_dispatch:   # Actions sekmesinden elle çalıştırma
+    inputs:
+      symbols:
+        description: "Sadece bu hisseler (boşluklu, ör. THYAO ASELS). Boş = hepsi"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -19,7 +24,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
-      - run: python scripts/fetch_data.py
+      - run: python scripts/fetch_data.py ${{ github.event.inputs.symbols }}
+        env:
+          PYTHONUNBUFFERED: "1"
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "veri-botu"

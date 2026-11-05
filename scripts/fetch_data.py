@@ -265,7 +265,9 @@ def symbol_list(argv: list[str]) -> list[tuple[str, str]]:
 
 def main():
     STOCKS.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
     targets = symbol_list(sys.argv[1:])
+    print(f"{len(targets)} hisse işlenecek ({time.time()-t0:.0f} sn)", flush=True)
 
     # Şirket adlarını tamamla
     try:
@@ -288,7 +290,10 @@ def main():
 
     def work(item):
         sym, name = item
-        return process(sym, name or names.get(sym, ""))
+        t1 = time.time()
+        r = process(sym, name or names.get(sym, ""))
+        print(f"   {sym}: {time.time()-t1:.0f} sn", flush=True)
+        return r
 
     with ThreadPoolExecutor(WORKERS) as ex:
         futs = {ex.submit(work, it): it[0] for it in targets}
@@ -313,7 +318,7 @@ def main():
         "stocks": sorted(results, key=lambda s: s["symbol"]),
     }
     summary_path.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
-    print(f"\nBitti: {len(results)} hisse, {len(failed)} hata")
+    print(f"\nBitti: {len(results)} hisse, {len(failed)} hata, {time.time()-t0:.0f} sn")
 
 
 if __name__ == "__main__":
