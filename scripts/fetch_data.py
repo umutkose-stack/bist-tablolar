@@ -392,7 +392,21 @@ def build_sector_map() -> dict[str, str]:
         sectors = prov.get_sectors()
     except Exception as e:  # noqa: BLE001
         print(f"Sektör listesi alınamadı: {e}", flush=True)
-        return {}
+        sectors = []
+    if not sectors:  # sayfadaki açılır listenin kimliği değişmiş olabilir: içeriğinden bul
+        try:
+            prov._init_session()  # noqa: SLF001
+            html = prov._get(prov.PAGE_URL).text  # noqa: SLF001
+            for sel in re.findall(r"<select[^>]*>(.*?)</select>", html, flags=re.S):
+                if "Sektör" not in sel:
+                    continue
+                opts = re.findall(r'<option[^>]*value="([^"]*)"[^>]*>([^<]+)</option>', sel)
+                cand = [{"id": v.strip(), "name": n.strip()} for v, n in opts if v.strip() and "Seçiniz" not in n]
+                if len(cand) > len(sectors):
+                    sectors = cand
+            print(f"Sektör listesi sayfadan: {len(sectors)} ({', '.join(x['name'] for x in sectors[:6])}…)", flush=True)
+        except Exception as e:  # noqa: BLE001
+            print(f"Sektör sayfası okunamadı: {e}", flush=True)
     out: dict[str, str] = {}
     for sec in sectors:
         name = (sec.get("name") or "").strip()
