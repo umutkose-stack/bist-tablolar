@@ -116,6 +116,7 @@ OVERRIDES = {
     "GLYHO": ("Holding", "Holding"), "ECZYT": ("Holding", "Holding"),
     "BERA": ("Holding", "Holding"), "POLHO": ("Holding", "Holding"),
     "SISE": ("Cam", "Proses Sanayi"), "TRKCM": ("Cam", "Proses Sanayi"),
+    "SUWEN": ("Hazır Giyim", "Tüketim Ürünleri"), "DOAS": ("Otomotiv", "Dayanıklı Tüketim"),
     # kaynakta sektörü boş gelenler
     "ISATR": ("Banka", "Finans"), "ISBTR": ("Banka", "Finans"), "ISCTR": ("Banka", "Finans"),
     "EKGYO": ("GYO", "Finans"), "KRDMB": ("Demir Çelik", "Madencilik ve Metal"),
