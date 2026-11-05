@@ -5,115 +5,179 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BIST Tablolar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+/* Palet: Zemin #EEF0F4 · Metin #283445 · Vurgu #835D29 (tüm metin çiftleri ≥ 4.5:1) */
 :root{
-  --bg:#f6f5f1; --panel:#ffffff; --ink:#1c1d1f; --muted:#6b6e73; --line:#e3e1db;
-  --accent:#1f5f8b; --pos:#1d7a4a; --neg:#b23a32; --chip:#eef2f5; --warn-bg:#fff6dc; --warn:#7a5a00;
-  --s1:#1f5f8b; --s2:#d07a2d;
+  --bg:#EEF0F4; --ink:#283445; --muted:#5A6473; --accent:#835D29; --on-accent:#FFFFFF;
+  --rule:rgba(40,52,69,.16); --hover:rgba(40,52,69,.05);
+  --pos:#1F6B45; --neg:#A3352D;
+  --band:#283445; --band-ink:#EEF0F4; --band-muted:#AEB6C4; --band-pos:#8FD3A8; --band-neg:#F3A49C; --band-accent:#D9B27A;
+  --s1:#283445; --s2:#835D29;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#121417; --panel:#1a1d21; --ink:#e7e8ea; --muted:#9097a0; --line:#2a2f35;
-    --accent:#6fb0de; --pos:#5cc48a; --neg:#ec7a70; --chip:#232830; --warn-bg:#2e2712; --warn:#e8c46a;
-    --s1:#6fb0de; --s2:#eda262;
+    --bg:#171D27; --ink:#E3E7EE; --muted:#9AA4B4; --accent:#D4A96E; --on-accent:#171D27;
+    --rule:rgba(227,231,238,.14); --hover:rgba(227,231,238,.05);
+    --pos:#7CCB9A; --neg:#F09A90;
+    --band:#222B38; --band-ink:#E3E7EE; --band-muted:#9AA4B4; --band-pos:#7CCB9A; --band-neg:#F09A90; --band-accent:#D4A96E;
+    --s1:#E3E7EE; --s2:#D4A96E;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#121417; --panel:#1a1d21; --ink:#e7e8ea; --muted:#9097a0; --line:#2a2f35;
-  --accent:#6fb0de; --pos:#5cc48a; --neg:#ec7a70; --chip:#232830; --warn-bg:#2e2712; --warn:#e8c46a;
-  --s1:#6fb0de; --s2:#eda262;
+  --bg:#171D27; --ink:#E3E7EE; --muted:#9AA4B4; --accent:#D4A96E; --on-accent:#171D27;
+  --rule:rgba(227,231,238,.14); --hover:rgba(227,231,238,.05);
+  --pos:#7CCB9A; --neg:#F09A90;
+  --band:#222B38; --band-ink:#E3E7EE; --band-muted:#9AA4B4; --band-pos:#7CCB9A; --band-neg:#F09A90; --band-accent:#D4A96E;
+  --s1:#E3E7EE; --s2:#D4A96E;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "IBM Plex Sans",system-ui,sans-serif}
-.num,td.n,th.n{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
-.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
-header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-h1{font-size:22px;margin:0;font-weight:600;letter-spacing:-.01em}
-h1 span{color:var(--accent)}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+.num,td.n,th.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 72px}
+
+/* üst bar */
+.top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:20px}
+.logo{font:600 26px/1 var(--serif);letter-spacing:-.01em;color:var(--ink);text-decoration:none}
+.logo b{color:var(--accent);font-weight:600}
 .meta{color:var(--muted);font-size:13px}
-.banner{background:var(--warn-bg);color:var(--warn);padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:16px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
-.controls{display:flex;flex-wrap:wrap;gap:10px;padding:14px;border-bottom:1px solid var(--line);align-items:end}
-.controls label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:4px}
-input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
-input[type=number]{width:96px}
-#q{width:200px}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+
+/* başlık bölümü */
+.hero{border-top:1px solid var(--ink);padding:28px 0 26px}
+.eyebrow{font:600 11px/1.4 var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--ink);margin:0 0 14px}
+.hero h1{font:400 clamp(28px,4.4vw,48px)/1.1 var(--serif);letter-spacing:-.015em;margin:0;max-width:24ch}
+.hero h1 em{font-style:italic}
+.hero p{margin:14px 0 0;max-width:56ch;color:var(--ink)}
+
+/* bölüm başlıkları: "01 / TARAMA" */
+.label{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-top:1px solid var(--ink);padding:16px 0 12px;font:600 11px/1.4 var(--sans);letter-spacing:.2em;text-transform:uppercase}
+.label .r{letter-spacing:0;text-transform:none;font-weight:400;font-size:12px;color:var(--muted)}
+
+.banner{border:1px solid var(--accent);color:var(--ink);padding:10px 14px;border-radius:6px;font-size:14px;margin-bottom:16px}
+.banner b{color:var(--accent)}
+.panel{border:1px solid var(--ink);border-radius:8px;background:transparent}
+
+/* kontroller */
+.controls{display:flex;flex-wrap:wrap;gap:12px;padding:16px;border-bottom:1px solid var(--ink);align-items:end}
+.controls label{display:flex;flex-direction:column;font-size:12px;color:var(--ink);gap:6px;font-weight:500}
+input,select{font:inherit;font-size:14px;color:var(--ink);background:transparent;border:1px solid var(--ink);border-radius:6px;padding:8px 10px;outline:none}
+input:focus{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--accent)}
+input::placeholder{color:var(--muted)}
+input[type=number]{width:100px}
+#q{width:210px}
+.seg{display:inline-flex;gap:6px}
+.seg button,.fbtn{white-space:nowrap;font:500 13px/1 var(--sans);border:1px solid var(--ink);background:transparent;color:var(--ink);padding:10px 14px;border-radius:6px;cursor:pointer}
+.seg button:hover,.fbtn:hover{background:var(--hover)}
+.seg button.on{background:var(--ink);color:var(--bg)}
 .more{display:contents}
-.fbtn{display:none;font:inherit;font-size:13px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:7px 11px;cursor:pointer}
+.fbtn{display:none}
 .fbtn.active{border-color:var(--accent);color:var(--accent)}
-.seg button{white-space:nowrap;font:inherit;font-size:13px;border:0;background:transparent;color:var(--muted);padding:7px 11px;cursor:pointer}
-.seg button.on{background:var(--accent);color:#fff}
+
+/* tablo */
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{padding:9px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th,td{padding:10px 9px;border-bottom:1px solid var(--rule);text-align:left;white-space:nowrap}
 #tbl th{white-space:normal;line-height:1.25;vertical-align:bottom}
 #tbl td.n,#tbl th.n{padding-left:6px}
-.per{font-size:11px;color:var(--muted);margin-left:6px;font-family:"IBM Plex Mono",monospace}
-th{font-size:12px;font-weight:500;color:var(--muted);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none}
+th{font:600 11px/1.3 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);position:sticky;top:0;background:var(--bg);cursor:pointer;user-select:none;border-bottom:1px solid var(--ink)}
 th.n,td.n{text-align:right}
-th.sorted{color:var(--ink)}
+th.sorted{color:var(--accent)}
+th.sorted::after{content:" ↕";font-weight:400}
 tbody tr{cursor:pointer}
-tbody tr:hover{background:var(--chip)}
-.sym{font-weight:600}
+tbody tr:hover{background:var(--hover)}
+tbody tr:last-child td{border-bottom:0}
+.sym{font-weight:600;letter-spacing:.01em}
+.per{font-size:11px;color:var(--muted);margin-left:6px;font-family:var(--mono)}
 .nm{color:var(--muted);font-size:12px;max-width:170px;overflow:hidden;text-overflow:ellipsis;display:block}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .dim{color:var(--muted)}
-.tag{font-size:11px;background:var(--chip);color:var(--muted);padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:400}
-.count{padding:10px 14px;color:var(--muted);font-size:13px}
-.star{font:inherit;background:none;border:0;cursor:pointer;padding:2px 6px 2px 0;font-size:18px;line-height:1;color:var(--line);vertical-align:-2px}
-.star.on{color:#e0a100}
-.star:hover{color:#e0a100}
-.dhead h2 .star{font-size:24px;vertical-align:-1px}
+.tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);color:var(--muted);padding:1px 5px;border-radius:4px;margin-left:6px;font-weight:500}
+.count{padding:12px 16px;color:var(--muted);font-size:12px;border-top:1px solid var(--ink)}
+.star{font:inherit;background:none;border:0;cursor:pointer;padding:2px 6px 2px 0;font-size:17px;line-height:1;color:var(--muted);vertical-align:-2px}
+.star.on,.star:hover{color:var(--accent)}
 td.first .fc{display:flex;align-items:flex-start;gap:4px}
-#tbl td.first,#tbl th:first-child{position:sticky;left:0;z-index:1;background:var(--panel)}
+#tbl td.first,#tbl th:first-child{position:sticky;left:0;z-index:1;background:var(--bg)}
 #tbl th:first-child{z-index:2}
-#tbl tbody tr:hover td.first{background:var(--chip)}
-.empty{padding:28px 14px;text-align:center;color:var(--muted)}
+.empty{padding:32px 16px;text-align:center;color:var(--muted)}
+.scrollhint{display:none;padding:10px 16px 0;font-size:12px;color:var(--muted)}
+.scrollhint.show{display:block}
+
 /* detay */
 #detail{display:none}
-.back{font:inherit;background:none;border:0;color:var(--accent);cursor:pointer;padding:0;margin-bottom:12px}
-.dhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-.dhead h2{margin:0;font-size:24px}
-.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-.tile{padding:14px}
-.tile .k{font-size:12px;color:var(--muted)}
-.tile .v{font-size:24px;font-weight:500;margin-top:4px}
-.tile .s{font-size:12px;color:var(--muted);margin-top:2px}
-.chartbox{padding:14px;margin-bottom:14px}
-.chartbox h3,.sec h3{margin:0 0 10px;font-size:14px;font-weight:600}
-.cw{position:relative;height:260px}
-.sec{padding:14px;margin-bottom:14px}
-.tabs{display:inline-flex;margin-bottom:10px}
+.back{font:500 14px var(--sans);background:none;border:0;color:var(--accent);cursor:pointer;padding:0;margin:0 0 18px}
+.dhead{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;border-top:1px solid var(--ink);padding-top:24px;margin-bottom:22px}
+.dhead h2{margin:0;font:400 clamp(34px,5vw,52px)/1 var(--serif);letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+.dhead h2 .star{font-size:26px}
+.dhead .meta{margin-top:8px}
+.band{background:var(--band);color:var(--band-ink);border-radius:8px;display:grid;grid-template-columns:repeat(4,1fr);margin-bottom:28px}
+.band .tile{padding:22px 20px;border-left:1px solid rgba(238,240,244,.12)}
+.band .tile:first-child{border-left:0}
+.band .tile .k{color:var(--band-ink)}
+.band .tile .v{font:400 38px/1.05 var(--serif);margin:10px 0 6px;color:var(--band-ink)}
+.band .tile .s{color:var(--band-muted)}
+.band .tile .pos{color:var(--band-pos)} .band .tile .neg{color:var(--band-neg)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--ink);border-radius:8px;margin-bottom:28px}
+.tiles .tile{padding:18px 20px;border-left:1px solid var(--rule)}
+.tiles .tile:first-child{border-left:0}
+.tile .k{font:600 11px/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.tile .v{font:400 30px/1.1 var(--serif);margin:8px 0 4px}
+.tile .s{font-size:12px;color:var(--muted)}
+.chartbox{padding:18px;margin-bottom:28px}
+.cw{position:relative;height:270px}
+.sec{padding:18px;margin-bottom:28px}
+.tabs{margin-bottom:14px}
 .full td:first-child{white-space:normal;min-width:240px}
 .full tr{cursor:default}
-.note{font-size:12px;color:var(--muted);margin-top:8px}
-@media (max-width:1000px){ #tbl{font-size:13px} #tbl th,#tbl td{padding-top:8px;padding-bottom:8px} .nm{max-width:130px} }
-.scrollhint{display:none;padding:8px 14px 0;font-size:12px;color:var(--muted)}
-.scrollhint.show{display:block}
+#qTbl th,.full th{position:static;cursor:default}
+.note{font-size:12px;color:var(--muted);margin-top:10px}
+footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-size:12px;color:var(--muted)}
+
+@media (max-width:1000px){ #tbl{font-size:13px} #tbl th,#tbl td{padding-top:9px;padding-bottom:9px} .nm{max-width:130px} }
 @media (max-width:720px){
+  .hero{padding:18px 0 16px}
+  .hero p:not(.eyebrow){display:none}
+  .eyebrow{letter-spacing:.16em}
+  .label .r{display:none}
+  .full td:first-child{min-width:150px;font-size:12px}
+  .full td:first-child,.full th:first-child{position:sticky;left:0;background:var(--bg);z-index:1}
   .fbtn{display:inline-block}
-  .more{display:none;width:100%;flex-wrap:wrap;gap:10px}
+  .more{display:none;width:100%;flex-wrap:wrap;gap:12px}
   .more.open{display:flex}
-  .tiles{grid-template-columns:repeat(2,1fr)}
   #q{width:100%}
   .controls label{flex:1 1 40%}
   input[type=number]{width:100%}
+  .band,.tiles{grid-template-columns:repeat(2,1fr)}
+  .band .tile:nth-child(3),.tiles .tile:nth-child(3){border-left:0}
+  .band .tile:nth-child(n+3){border-top:1px solid rgba(238,240,244,.12)}
+  .tiles .tile:nth-child(n+3){border-top:1px solid var(--rule)}
+  .band .tile .v{font-size:30px}
+  .tile .v{font-size:26px}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>BIST <span>Tablolar</span></h1>
+  <header class="top">
+    <a class="logo" href="#">bist tablolar<b>.</b></a>
     <div class="meta" id="updated"></div>
   </header>
   <div class="banner" id="demoBanner" hidden>
-    Örnek veri gösteriliyor (uydurma hisseler). Gerçek veriler, GitHub Actions ilk kez çalışıp <code>data/</code> klasörünü doldurduğunda burada görünür.
+    <b>Örnek veri.</b> Gerçek veriler, otomatik güncelleme ilk kez çalışıp <code>data/</code> klasörünü doldurduğunda burada görünür.
   </div>
 
   <!-- TARAMA -->
+  <div id="listView">
+  <section class="hero">
+    <p class="eyebrow">Borsa İstanbul · kişisel</p>
+    <h1>Şirketlere rakamlarla, <em>sade</em> bir bakış.</h1>
+    <p>F/K, PD/DD, FD/FAVÖK ve kârlılık tek tabloda. Bilançolar açıklandığı akşam kendiliğinden güncellenir.</p>
+  </section>
+  <div class="label"><span>01 / Hisse taraması</span><span class="r" id="labelR"></span></div>
   <section id="list" class="panel">
     <div class="controls">
       <label>Görünüm
@@ -154,24 +218,31 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
     <div class="scrollhint" id="hint">↔ Diğer sütunlar için tabloyu yana kaydır</div>
     <div class="count" id="count"></div>
   </section>
+  </div>
 
   <!-- DETAY -->
   <section id="detail">
     <button class="back" onclick="location.hash=''">← Tüm hisseler</button>
-    <div class="dhead"><div><h2><button class="star" id="dStar" title="Favorilere ekle/çıkar">☆</button><span id="dSym"></span></h2><div class="meta" id="dName"></div></div><div class="meta num" id="dPrice"></div></div>
+    <div class="dhead"><div><p class="eyebrow" id="dEyebrow">Hisse</p><h2><button class="star" id="dStar" title="Favorilere ekle/çıkar">☆</button><span id="dSym"></span></h2><div class="meta" id="dName"></div></div><div class="meta num" id="dPrice"></div></div>
+    <div class="label"><span>01 / Temel oranlar</span><span class="r">son 12 ay</span></div>
+    <div class="band" id="band"></div>
+    <div class="label"><span>02 / Değerleme ve borç</span></div>
     <div class="tiles" id="tiles"></div>
-    <div class="panel chartbox"><h3>Çeyreklik marjlar</h3><div class="cw"><canvas id="mChart"></canvas></div></div>
+    <div class="label"><span>03 / Çeyreklik marjlar</span></div>
+    <div class="panel chartbox"><div class="cw"><canvas id="mChart"></canvas></div></div>
+    <div class="label"><span>04 / Çeyreklik özet</span><span class="r">tek çeyrek</span></div>
     <div class="panel sec">
-      <h3>Çeyreklik özet</h3>
       <div class="tablewrap"><table id="qTbl"></table></div>
       <div class="note" id="qNote"></div>
     </div>
+    <div class="label"><span>05 / Mali tablolar</span></div>
     <div class="panel sec">
       <div class="tabs seg" id="fullTabs"><button data-v="income_statement" class="on">Gelir tablosu</button><button data-v="balance_sheet">Bilanço</button></div>
       <div class="tablewrap"><table class="full" id="fullTbl"></table></div>
       <div class="note">Gelir tablosu kaynakta yıl başından itibaren kümülatif verilir (3A, 6A, 9A, 12A).</div>
     </div>
   </section>
+  <footer>Veri: İş Yatırım mali tabloları (borsapy ile). Yalnızca kişisel kullanım içindir; yatırım tavsiyesi değildir.</footer>
 </div>
 
 <script>
@@ -240,6 +311,7 @@ function renderList() {
   const pe = num("#fPe"), pb = num("#fPb"), op = num("#fOp"), net = num("#fNet");
   const ev = num("#fEv"), nd = num("#fNd"), pg = num("#fPeg");
   $("#favN").textContent = favs.size ? `(${favs.size})` : "";
+  $("#labelR").textContent = `${state.stocks.length} hisse · sıralamak için başlığa dokun`;
   $("#view").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.v === view));
   let rows = state.stocks.filter(s => {
     if (view === "fav" && !favs.has(s.symbol)) return false;
@@ -287,12 +359,14 @@ async function renderDetail(sym) {
   $("#dSym").textContent = d.symbol; paintStar(d.symbol);
   $("#dName").textContent = (d.name || "") + (d.group === "banka" ? " · banka formatı" : "");
   $("#dPrice").textContent = (d.price != null ? nf(2).format(d.price) + " ₺ · " : "") + "Piy. değ. " + money(d.market_cap);
-  const tile = (k, v, s, cls = "") => `<div class="panel tile"><div class="k">${k}</div><div class="v num ${cls}">${v}</div><div class="s">${s}</div></div>`;
-  $("#tiles").innerHTML =
+  const tile = (k, v, s, cls = "") => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  $("#dEyebrow").textContent = d.group === "banka" ? "Banka · son dönem " + per(d.last_period) : "Son bilanço · " + per(d.last_period);
+  $("#band").innerHTML =
     tile("F/K", mult(d.pe), "Net kâr: " + money(d.net_ttm) + " (12 ay)") +
     tile("PD/DD", mult(d.pb), "Özkaynak: " + money(d.quarters?.[0]?.equity)) +
     tile("Esas faaliyet marjı", pct(d.op_margin_ttm), "Son çeyrek: " + pct(d.op_margin_q), sign(d.op_margin_ttm)) +
-    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm)) +
+    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm));
+  $("#tiles").innerHTML =
     tile("FD/FAVÖK", mult(d.ev_ebitda), "FAVÖK: " + money(d.ebitda_ttm) + " (12 ay)") +
     tile("Net borç/FAVÖK", ndx(d.nd_ebitda), "Net borç: " + money(d.net_debt), d.nd_ebitda != null && d.nd_ebitda < 0 ? "pos" : (d.nd_ebitda > 3 ? "neg" : "")) +
     tile("PEG", mult(d.peg), "Net kâr büyümesi: " + pct(d.net_growth) + " (yıllık)") +
@@ -301,8 +375,9 @@ async function renderDetail(sym) {
   const qs = [...d.quarters].reverse();
   const css = getComputedStyle(document.documentElement);
   const c1 = css.getPropertyValue("--s1").trim(), c2 = css.getPropertyValue("--s2").trim();
-  const grid = css.getPropertyValue("--line").trim(), muted = css.getPropertyValue("--muted").trim();
+  const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
   if (chart) chart.destroy();
+  if (typeof Chart !== "undefined") { Chart.defaults.font.family = "Inter, system-ui, sans-serif"; Chart.defaults.font.size = 12; }
   if (typeof Chart === "undefined") { $("#mChart").parentElement.innerHTML = "<p class='dim'>Grafik kütüphanesi yüklenemedi.</p>"; }
   else chart = new Chart($("#mChart"), {
     type: "line",
@@ -332,13 +407,13 @@ function renderFull(d, key) {
   const t = d[key];
   if (!t) { $("#fullTbl").innerHTML = "<tr><td class='dim'>Veri yok</td></tr>"; return; }
   $("#fullTbl").innerHTML = `<thead><tr><th>Kalem</th>${t.columns.map(c => `<th class="n">${per(c)}</th>`).join("")}</tr></thead><tbody>` +
-    t.rows.map(r => `<tr><td>${r[0]}</td>${r.slice(1).map(v => `<td class="n">${money(v)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+    t.rows.filter(r => r.slice(1).some(v => v != null && v !== 0)).map(r => `<tr><td>${r[0]}</td>${r.slice(1).map(v => `<td class="n">${money(v)}</td>`).join("")}</tr>`).join("") + "</tbody>";
 }
 
 /* ---------- yönlendirme ve olaylar ---------- */
 function route() {
   const sym = decodeURIComponent(location.hash.slice(1));
-  $("#list").style.display = sym ? "none" : "";
+  $("#listView").style.display = sym ? "none" : "";
   $("#detail").style.display = sym ? "block" : "none";
   if (sym) { renderDetail(sym); window.scrollTo(0, 0); } else renderList();
 }
