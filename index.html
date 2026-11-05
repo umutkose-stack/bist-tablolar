@@ -525,7 +525,10 @@ async function renderDetail(sym) {
 
   $("#qTbl").innerHTML = `<thead><tr><th>Dönem</th><th class="n">Satışlar</th><th class="n">Brüt kâr</th><th class="n">Esas faal. kârı</th><th class="n">Net kâr</th><th class="n">Esas faal. marjı</th><th class="n">Net marj</th><th class="n">Özkaynak</th></tr></thead><tbody>` +
     d.quarters.map(q => `<tr><td>${per(q.period)}</td><td class="n">${money(q.revenue)}</td><td class="n">${money(q.gross)}</td><td class="n ${sign(q.operating)}">${money(q.operating)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.op_margin)}">${pct(q.op_margin)}</td><td class="n ${sign(q.net_margin)}">${pct(q.net_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
-  $("#qNote").textContent = "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır. FD/FAVÖK ve net borç İş Yatırım şirket kartından; FAVÖK buradan geri hesaplanır. PEG nominal büyümeyle hesaplanır, yüksek enflasyonda olduğundan düşük görünebilir.";
+  const adjTxt = d.inflation_adjusted
+    ? `Tutarlar enflasyona göre düzeltildi: tümü ${per(d.money_base)} TL'si cinsinden (TÜFE ile). `
+    : (d.group === "banka" ? "Bankalar TMS 29 uygulamadığı için tutarlar nominaldir. " : "");
+  $("#qNote").textContent = adjTxt + "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır. FD/FAVÖK ve net borç İş Yatırım şirket kartından; FAVÖK buradan geri hesaplanır. PEG nominal büyümeyle hesaplanır, yüksek enflasyonda olduğundan düşük görünebilir.";
 
   renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
   renderRelative(d);
@@ -626,7 +629,7 @@ function renderTTM(d) {
   const g = (a, b) => (a != null && b) ? (a / b - 1) * 100 : null;
   const gr = g(last.revenue, first.revenue), gn = g(last.net, first.net);
   const sg = v => (v >= 0 ? "+" : "−") + "%" + nf(0).format(Math.abs(v));
-  $("#tNote").textContent = `${per(first.period)} → ${per(last.period)}: TTM satışlar ${gr == null ? "—" : sg(gr)}, TTM net kâr ${gn == null || first.net <= 0 ? "—" : sg(gn)} (nominal). Her nokta, o çeyrekle biten 12 ayı gösterir; mevsimsel dalgalanma bu yüzden kaybolur. Enflasyon muhasebesi nedeniyle eski çeyrekler yeniden fiyatlanmadığı için uzun dönemli büyüme olduğundan yüksek görünebilir.`;
+  $("#tNote").textContent = `${per(first.period)} → ${per(last.period)}: TTM satışlar ${gr == null ? "—" : sg(gr)}, TTM net kâr ${gn == null || first.net <= 0 ? "—" : sg(gn)} ${d.inflation_adjusted ? `(reel, ${per(d.money_base)} TL'si ile)` : "(nominal)"}. Her nokta, o çeyrekle biten 12 ayı gösterir; mevsimsel dalgalanma bu yüzden kaybolur.${d.inflation_adjusted ? " Tüm çeyrekler aynı paraya çevrildiği için büyüme enflasyondan arındırılmıştır." : ""}`;
 }
 
 /* ---------- karşılaştırma ---------- */

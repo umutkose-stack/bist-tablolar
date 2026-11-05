@@ -100,6 +100,84 @@ def to_single_quarters(series: dict[str, float | None]) -> dict[str, float | Non
     return out
 
 
+# ------------------------------------------------- enflasyon (TMS 29) düzeltmesi
+#
+# Kaynak (İş Yatırım) geçmiş dönemleri, bir sonraki yılın aynı dönem raporundaki
+# YENİDEN DÜZENLENMİŞ karşılaştırmalı rakamlarla günceller. Örn. BİM 6A2025 satışları
+# raporda 309,8 mlr TL (Haziran 2025 parası) iken kaynakta 409,3 mlr (Haziran 2026 parası).
+# Bu yüzden ardışık kümülatif dönemler farklı tarihlerin parasıyla durur ve doğrudan
+# çıkarılamaz. Çözüm: her kümülatif rakamın "hangi tarihin parası" olduğunu bul, TÜFE ile
+# en son dönemin parasına çevir, sonra çıkar.
+
+CPI: dict[str, float] = {}   # "YYYY-MM" -> zincirlenmiş TÜFE endeksi
+
+# Fonksiyonel para birimi TL olmayan (USD/EUR) bilinen şirketler
+FX_FUNCTIONAL = {"THYAO", "PGSUS", "EREGL", "ISDMR", "TAVHL"}
+
+
+def load_cpi() -> dict[str, float]:
+    try:
+        df = bp.Inflation().tufe(start="2019-01-01")
+    except Exception as e:  # noqa: BLE001
+        print(f"TÜFE alınamadı: {e}", flush=True)
+        return {}
+    rows = []
+    for idx, r in df.iterrows():
+        ym = str(r.get("YearMonth") or "")
+        m = re.match(r"(\d{4})[-/.]?(\d{1,2})", ym) or re.match(r"(\d{4})-(\d{2})", str(idx)[:7])
+        mi = clean(r.get("MonthlyInflation"))
+        if m and mi is not None:
+            rows.append((f"{int(m.group(1)):04d}-{int(m.group(2)):02d}", mi))
+    rows.sort()
+    out, lvl = {}, 100.0
+    for ym, mi in rows:
+        lvl *= 1 + mi / 100
+        out[ym] = lvl
+    print(f"TÜFE: {len(out)} ay ({rows[0][0] if rows else '-'} → {rows[-1][0] if rows else '-'})", flush=True)
+    return out
+
+
+def cpi_at(col: str) -> float | None:
+    """Çeyrek sonu ayının endeksi; henüz açıklanmadıysa en son bilinen ay."""
+    if not CPI:
+        return None
+    y, q = period_key(col)
+    key = f"{y:04d}-{q * 3:02d}"
+    if key in CPI:
+        return CPI[key]
+    older = [k for k in CPI if k <= key]
+    return CPI[max(older)] if older else None
+
+
+def money_date(col: str, available: set[str], latest: str | None = None, mode: str = "tms29") -> str:
+    """Kaynakta bu kümülatif rakam hangi tarihin parasıyla duruyor?
+    - Ertesi yılın aynı dönemi yayımlandıysa: o raporun yeniden düzenlenmiş karşılaştırmalısı.
+    - Yayımlanmadıysa ara dönemler kendi tarihinin parasıyla; son YILLIK rakam ise
+      şirketin en son raporunun parasıyla (kaynak bunu da güncelliyor; ör. THY 12A2025
+      raporda ~1 trilyon TL, kaynakta 1.188 mlr)."""
+    y, q = period_key(col)
+    nxt = f"{y + 1}Q{q}"
+    if mode == "usd" and q != 4:
+        # Fonksiyonel para birimi USD olanlar (THY, Erdemir…) ara dönemleri yeniden
+        # düzenlemiyor; kaynak yalnızca yıllık rakamları güncelliyor.
+        return col
+    if nxt in available:
+        return nxt
+    if q == 4 and latest:
+        return latest
+    return col
+
+
+def to_base(cum: dict[str, float | None], available: set[str], base: str, mode: str = "tms29") -> dict[str, float | None]:
+    """Kümülatif rakamları 'base' döneminin parasına çevir."""
+    ib = cpi_at(base)
+    out = {}
+    for c, v in cum.items():
+        im = cpi_at(money_date(c, available, base, mode))
+        out[c] = v * ib / im if (v is not None and ib and im) else None
+    return out
+
+
 def ttm(single: dict[str, float | None], cols_desc: list[str]) -> float | None:
     vals = [single.get(c) for c in cols_desc[:4]]
     if len(vals) < 4 or any(v is None for v in vals):
@@ -261,13 +339,30 @@ def process(symbol: str, name: str = "") -> dict | None:
     if not cols_all:
         return None
 
-    series = {}
+    cums = {}
     for key, (pats, excl) in ROWS.items():
         row = find_row(inc, pats, excl)
-        cum = {c: clean(row[c]) if row is not None and c in row.index else None for c in cols_all}
-        series[key] = to_single_quarters(cum)
-    if all(v is None for v in series["net_parent"].values()):
-        series["net_parent"] = series["net"]
+        cums[key] = {c: clean(row[c]) if row is not None and c in row.index else None for c in cols_all}
+    if all(v is None for v in cums["net_parent"].values()):
+        cums["net_parent"] = cums["net"]
+
+    # Ham (nominal) tek çeyrekler ve TÜFE ile aynı paraya çevrilmiş tek çeyrekler
+    available = {c for c in cols_all if cums["revenue"].get(c) is not None}
+    base = cols_all[0]
+    variants = {"raw": {k: to_single_quarters(v) for k, v in cums.items()}}
+    if CPI:
+        for mode in ("tms29", "usd"):
+            variants[mode] = {k: to_single_quarters(to_base(v, available, base, mode)) for k, v in cums.items()}
+    # Bankalar TMS 29 uygulamıyor (BDDK); fonksiyonel para birimi USD/EUR olanlar ara
+    # dönemleri yeniden düzenlemiyor; geri kalan herkes TMS 29.
+    if not CPI or group == "UFRS":
+        method = "raw"
+    elif symbol in FX_FUNCTIONAL:
+        method = "usd"
+    else:
+        method = "tms29"
+    series = variants[method]
+    use_adj = method != "raw"
 
     cols = cols_all[:QUARTERS]
 
@@ -368,6 +463,9 @@ def process(symbol: str, name: str = "") -> dict | None:
         "income_statement": df_to_table(inc[cols]),
         "balance_sheet": df_to_table(bal[[c for c in cols if c in bal.columns]]) if bal is not None and not bal.empty else None,
         "income_is_cumulative": INCOME_IS_CUMULATIVE,
+        "inflation_adjusted": use_adj,
+        "adjust_method": method,
+        "money_base": base if use_adj else None,
     }
     (STOCKS / f"{symbol}.json").write_text(json.dumps(detail, ensure_ascii=False), encoding="utf-8")
     return summary
@@ -441,6 +539,9 @@ def main():
             old = {s["symbol"]: s for s in json.loads(summary_path.read_text(encoding="utf-8"))["stocks"]}
         except Exception:  # noqa: BLE001
             pass
+
+    global CPI
+    CPI = load_cpi()
 
     try:
         sector_map = build_sector_map()
