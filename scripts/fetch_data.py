@@ -542,6 +542,8 @@ def main():
 
     global CPI
     CPI = load_cpi()
+    if CPI:  # denetim ve şeffaflık için
+        (DATA / "cpi.json").write_text(json.dumps(CPI), encoding="utf-8")
 
     try:
         sector_map = build_sector_map()
