@@ -137,7 +137,8 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
 footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-size:12px;color:var(--muted)}
 
-@media (max-width:1000px){ #tbl{font-size:13px} #tbl th,#tbl td{padding-top:9px;padding-bottom:9px} .nm{max-width:130px} }
+@media (max-width:1000px){ #tbl{font-size:13px} #tbl th,#tbl td{padding-top:9px;padding-bottom:9px} .nm{max-width:120px} #tbl th{letter-spacing:.02em} }
+@media (max-width:960px) and (min-width:721px){ .c-price{display:none} #tbl td.n,#tbl th.n{padding-left:4px;padding-right:7px} }
 @media (max-width:720px){
   .hero{padding:18px 0 16px}
   .hero p:not(.eyebrow){display:none}
@@ -202,7 +203,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
       <table id="tbl">
         <thead><tr>
           <th data-k="symbol">Hisse</th>
-          <th data-k="price" class="n">Fiyat</th>
+          <th data-k="price" class="n c-price">Fiyat</th>
           <th data-k="market_cap" class="n">Piy.<br>Değeri</th>
           <th data-k="pe" class="n">F/K</th>
           <th data-k="pb" class="n">PD/DD</th>
@@ -335,7 +336,7 @@ function renderList() {
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
       <td class="first"><div class="fc"><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span>${s.group === "banka" ? '<span class="tag">banka</span>' : ""}<span class="nm">${s.name || ""}</span></div></div></td>
-      <td class="n">${s.price == null ? "—" : nf(2).format(s.price)}</td>
+      <td class="n c-price">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${mult(s.pe)}</td>
       <td class="n">${mult(s.pb)}</td>
