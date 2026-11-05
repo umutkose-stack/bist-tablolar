@@ -164,6 +164,11 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
 .full tr{cursor:default}
 #qTbl th,.full th{position:static;cursor:default}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
+/* TTM */
+.chartbox.ttm{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.chartbox.ttm .note{grid-column:1 / -1;margin:0}
+.ch{font:600 11px/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px}
+.cmode{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:28px 0 0;font-size:12px}
 /* karşılaştırma */
 #compare{display:none}
 .cmp{appearance:none;-webkit-appearance:none;width:16px;height:16px;border:1px solid var(--ink);border-radius:3px;margin:1px 4px 0 0;cursor:pointer;flex:none;position:relative;background:transparent}
@@ -233,6 +238,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
   .band .tile:nth-child(n+3){border-top:1px solid rgba(238,240,244,.12)}
   .tiles .tile:nth-child(n+3){border-top:1px solid var(--rule)}
   .band .tile .v{font-size:30px}
+  .chartbox.ttm{grid-template-columns:1fr}
   .rrow{grid-template-columns:1fr auto;gap:6px 12px}
   .rrow .strip{grid-column:1 / -1;margin-top:12px}
   .rrow .rtxt{grid-column:1 / -1}
@@ -324,12 +330,18 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
     <div class="tiles" id="tiles"></div>
     <div class="label"><span>04 / Çeyreklik marjlar</span></div>
     <div class="panel chartbox"><div class="cw"><canvas id="mChart"></canvas></div></div>
-    <div class="label"><span>05 / Çeyreklik özet</span><span class="r">tek çeyrek</span></div>
+    <div class="label"><span>05 / Yıllıklandırılmış trend (TTM)</span><span class="r">her nokta = son 4 çeyreğin toplamı</span></div>
+    <div class="panel chartbox ttm">
+      <div><p class="ch">Marjlar</p><div class="cw"><canvas id="tMarg"></canvas></div></div>
+      <div><p class="ch">Satışlar ve net kâr</p><div class="cw"><canvas id="tAbs"></canvas></div></div>
+      <p class="note" id="tNote"></p>
+    </div>
+    <div class="label"><span>06 / Çeyreklik özet</span><span class="r">tek çeyrek</span></div>
     <div class="panel sec">
       <div class="tablewrap"><table id="qTbl"></table></div>
       <div class="note" id="qNote"></div>
     </div>
-    <div class="label"><span>06 / Mali tablolar</span></div>
+    <div class="label"><span>07 / Mali tablolar</span></div>
     <div class="panel sec">
       <div class="tabs seg" id="fullTabs"><button data-v="income_statement" class="on">Gelir tablosu</button><button data-v="balance_sheet">Bilanço</button></div>
       <div class="tablewrap"><table class="full" id="fullTbl"></table></div>
@@ -342,9 +354,10 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
     <div class="dhead"><div><p class="eyebrow">Yan yana karşılaştırma</p><h2 id="cTitle"></h2></div><div class="meta" id="cMeta"></div></div>
     <div class="label"><span>01 / Çarpanlar ve kârlılık</span><span class="r">en iyi değer vurgulu</span></div>
     <div class="panel"><div class="tablewrap"><table class="ctbl" id="cTbl"></table></div></div>
-    <div class="label"><span>02 / Esas faaliyet marjı</span><span class="r">tek çeyrek</span></div>
+    <div class="cmode"><span class="seg" id="cMode"><button data-v="q" class="on">Tek çeyrek</button><button data-v="ttm">Son 12 ay (TTM)</button></span><span class="dim" id="cModeNote">Mevsimselliği temizlemek için TTM'e geç.</span></div>
+    <div class="label"><span>02 / Esas faaliyet marjı</span><span class="r cmr">tek çeyrek</span></div>
     <div class="panel chartbox"><div class="cw"><canvas id="cOp"></canvas></div></div>
-    <div class="label"><span>03 / Net kâr marjı</span><span class="r">tek çeyrek</span></div>
+    <div class="label"><span>03 / Net kâr marjı</span><span class="r cmr">tek çeyrek</span></div>
     <div class="panel chartbox"><div class="cw"><canvas id="cNet"></canvas></div></div>
   </section>
   <div class="cbar" id="cbar" hidden>
@@ -516,6 +529,7 @@ async function renderDetail(sym) {
 
   renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
   renderRelative(d);
+  renderTTM(d);
   const inC = cmpSel.includes(d.symbol);
   $("#dCmp").textContent = inC ? "✓ Karşılaştırmada" : "+ Karşılaştırmaya ekle";
   $("#dCmp").classList.toggle("on", inC);
@@ -567,11 +581,59 @@ function markActiveFilters() {
   $("#fClear").hidden = !filters.length;
 }
 
+/* ---------- TTM (son 4 çeyrek toplamı) ---------- */
+function nextQ(p) { const m = p.match(/(\d{4})Q(\d)/); let y = +m[1], q = +m[2] + 1; if (q > 4) { y++; q = 1; } return `${y}Q${q}`; }
+function ttmQuarters(qs) {             // qs: yeniden eskiye tek çeyrekler -> yeniden eskiye TTM
+  const out = [];
+  for (let i = 0; i + 3 < qs.length; i++) {
+    const w = qs.slice(i, i + 4);
+    // ardışık çeyrek mi?
+    let ok = true; for (let j = 0; j < 3; j++) if (nextQ(w[j + 1].period) !== w[j].period) ok = false;
+    const sum = k => (ok && w.every(q => q[k] != null)) ? w.reduce((a, q) => a + q[k], 0) : null;
+    const rev = sum("revenue"), op = sum("operating"), net = sum("net");
+    out.push({ period: w[0].period, revenue: rev, operating: op, net,
+      op_margin: rev ? (op == null ? null : op / rev) : null, net_margin: rev ? (net == null ? null : net / rev) : null });
+  }
+  return out;
+}
+let tCharts = [];
+function renderTTM(d) {
+  tCharts.forEach(c => c.destroy()); tCharts = [];
+  const t = ttmQuarters(d.quarters).reverse();
+  if (typeof Chart === "undefined") { $("#tNote").textContent = "Grafik kütüphanesi yüklenemedi."; return; }
+  if (t.length < 2) { $("#tNote").textContent = "TTM için yeterli çeyrek yok."; return; }
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue("--s1").trim(), c2 = css.getPropertyValue("--s2").trim();
+  const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
+  const labels = t.map(q => per(q.period));
+  const base = { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+    plugins: { legend: { labels: { color: muted, boxWidth: 12 } } } };
+  tCharts.push(new Chart($("#tMarg"), { type: "line",
+    data: { labels, datasets: [
+      { label: "Esas faaliyet marjı", data: t.map(q => q.op_margin == null ? null : q.op_margin * 100), borderColor: c1, backgroundColor: c1, borderWidth: 2, tension: .25, spanGaps: true },
+      { label: "Net kâr marjı", data: t.map(q => q.net_margin == null ? null : q.net_margin * 100), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, spanGaps: true }] },
+    options: { ...base, plugins: { ...base.plugins, tooltip: { callbacks: { label: c => `${c.dataset.label}: %${nf(1).format(c.parsed.y)}` } } },
+      scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => "%" + v } } } } }));
+  tCharts.push(new Chart($("#tAbs"), {
+    data: { labels, datasets: [
+      { type: "bar", label: "Satışlar (TTM)", data: t.map(q => q.revenue), backgroundColor: c1 + "33", borderColor: c1, borderWidth: 1, yAxisID: "y" },
+      { type: "line", label: "Net kâr (TTM)", data: t.map(q => q.net), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, yAxisID: "y1", spanGaps: true }] },
+    options: { ...base, plugins: { ...base.plugins, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y)}` } } },
+      scales: { x: { grid: { display: false }, ticks: { color: muted } },
+        y: { position: "left", grid: { color: grid }, ticks: { color: muted, callback: v => money(v) } },
+        y1: { position: "right", grid: { display: false }, ticks: { color: c2, callback: v => money(v) } } } } }));
+  const first = t[0], last = t[t.length - 1];
+  const g = (a, b) => (a != null && b) ? (a / b - 1) * 100 : null;
+  const gr = g(last.revenue, first.revenue), gn = g(last.net, first.net);
+  const sg = v => (v >= 0 ? "+" : "−") + "%" + nf(0).format(Math.abs(v));
+  $("#tNote").textContent = `${per(first.period)} → ${per(last.period)}: TTM satışlar ${gr == null ? "—" : sg(gr)}, TTM net kâr ${gn == null || first.net <= 0 ? "—" : sg(gn)} (nominal). Her nokta, o çeyrekle biten 12 ayı gösterir; mevsimsel dalgalanma bu yüzden kaybolur. Enflasyon muhasebesi nedeniyle eski çeyrekler yeniden fiyatlanmadığı için uzun dönemli büyüme olduğundan yüksek görünebilir.`;
+}
+
 /* ---------- karşılaştırma ---------- */
 const CMP_KEY = "bist-tablolar:karsilastir";
 let cmpSel = [];
 try { cmpSel = JSON.parse(localStorage.getItem(CMP_KEY) || "[]").slice(0, 3); } catch {}
-let cCharts = [];
+let cCharts = [], cMode = "q", cLast = null;
 function saveCmp() { try { localStorage.setItem(CMP_KEY, JSON.stringify(cmpSel)); } catch {} }
 function toggleCmp(sym) {
   if (cmpSel.includes(sym)) cmpSel = cmpSel.filter(x => x !== sym);
@@ -586,6 +648,13 @@ function paintCbar() {
   $("#cbarGo").disabled = cmpSel.length < 2;
   $("#cbarGo").textContent = cmpSel.length < 2 ? "En az 2 hisse seç" : "Karşılaştır →";
 }
+$("#cMode").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  cMode = b.dataset.v;
+  $("#cMode").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  $("#cModeNote").textContent = cMode === "ttm" ? "Her nokta son 4 çeyreğin toplamı; mevsimsellik temizlenir." : "Mevsimselliği temizlemek için TTM'e geç.";
+  if (cLast) renderCompare(cLast);
+});
 $("#cbarGo").addEventListener("click", () => { if (cmpSel.length >= 2) location.hash = "karsilastir/" + cmpSel.join(","); });
 $("#cbarClear").addEventListener("click", () => { cmpSel = []; saveCmp(); paintCbar(); renderList(); });
 $("#dCmp").addEventListener("click", () => {
@@ -640,11 +709,14 @@ async function renderCompare(syms) {
   const css = getComputedStyle(document.documentElement);
   const cols = ["--s1", "--s2", "--s3"].map(v => css.getPropertyValue(v).trim());
   const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
-  const periods = [...new Set(ds.flatMap(d => d.quarters.map(q => q.period)))].sort();
+  cLast = syms;
+  const series = d => cMode === "ttm" ? ttmQuarters(d.quarters) : d.quarters;
+  const periods = [...new Set(ds.flatMap(d => series(d).filter(q => q.op_margin != null || q.net_margin != null).map(q => q.period)))].sort();
+  document.querySelectorAll(".cmr").forEach(e => e.textContent = cMode === "ttm" ? "son 12 ay (TTM)" : "tek çeyrek");
   const mk = (canvas, key) => new Chart(canvas, {
     type: "line",
     data: { labels: periods.map(per), datasets: ds.map((d, i) => {
-      const m = Object.fromEntries(d.quarters.map(q => [q.period, q[key]]));
+      const m = Object.fromEntries(series(d).map(q => [q.period, q[key]]));
       return { label: d.symbol, data: periods.map(p => m[p] == null ? null : m[p] * 100), borderColor: cols[i], backgroundColor: cols[i], borderWidth: 2, pointRadius: 3, tension: .25, spanGaps: true };
     }) },
     options: {
