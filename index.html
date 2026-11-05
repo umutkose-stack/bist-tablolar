@@ -48,14 +48,17 @@ input[type=number]{width:96px}
 .seg button.on{background:var(--accent);color:#fff}
 .tablewrap{overflow-x:auto}
 table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th,td{padding:9px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+#tbl th{white-space:normal;line-height:1.25;vertical-align:bottom}
+#tbl td.n,#tbl th.n{padding-left:6px}
+.per{font-size:11px;color:var(--muted);margin-left:6px;font-family:"IBM Plex Mono",monospace}
 th{font-size:12px;font-weight:500;color:var(--muted);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none}
 th.n,td.n{text-align:right}
 th.sorted{color:var(--ink)}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--chip)}
 .sym{font-weight:600}
-.nm{color:var(--muted);font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;display:block}
+.nm{color:var(--muted);font-size:12px;max-width:170px;overflow:hidden;text-overflow:ellipsis;display:block}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .dim{color:var(--muted)}
 .tag{font-size:11px;background:var(--chip);color:var(--muted);padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:400}
 .count{padding:10px 14px;color:var(--muted);font-size:13px}
@@ -86,6 +89,9 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
 .full td:first-child{white-space:normal;min-width:240px}
 .full tr{cursor:default}
 .note{font-size:12px;color:var(--muted);margin-top:8px}
+@media (max-width:1000px){ #tbl{font-size:13px} #tbl th,#tbl td{padding-top:8px;padding-bottom:8px} .nm{max-width:130px} }
+.scrollhint{display:none;padding:8px 14px 0;font-size:12px;color:var(--muted)}
+.scrollhint.show{display:block}
 @media (max-width:720px){
   .fbtn{display:inline-block}
   .more{display:none;width:100%;flex-wrap:wrap;gap:10px}
@@ -133,19 +139,19 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
         <thead><tr>
           <th data-k="symbol">Hisse</th>
           <th data-k="price" class="n">Fiyat</th>
-          <th data-k="market_cap" class="n">Piy. Değeri</th>
+          <th data-k="market_cap" class="n">Piy.<br>Değeri</th>
           <th data-k="pe" class="n">F/K</th>
           <th data-k="pb" class="n">PD/DD</th>
           <th data-k="ev_ebitda" class="n" title="Firma değeri / son 12 ay FAVÖK">FD/FAVÖK</th>
-          <th data-k="nd_ebitda" class="n" title="Net borç / son 12 ay FAVÖK. Negatif = net nakit">Net Borç/FAVÖK</th>
+          <th data-k="nd_ebitda" class="n" title="Net borç / son 12 ay FAVÖK. Negatif = net nakit">Net Borç/<br>FAVÖK</th>
           <th data-k="peg" class="n" title="F/K ÷ yıllık net kâr büyümesi (%)">PEG</th>
-          <th data-k="op" class="n">Esas Faal. Marjı</th>
-          <th data-k="net" class="n">Net Kâr Marjı</th>
-          <th data-k="last_period" class="n">Son Dönem</th>
+          <th data-k="op" class="n">Esas Faal.<br>Marjı</th>
+          <th data-k="net" class="n">Net Kâr<br>Marjı</th>
         </tr></thead>
         <tbody></tbody>
       </table>
     </div>
+    <div class="scrollhint" id="hint">↔ Diğer sütunlar için tabloyu yana kaydır</div>
     <div class="count" id="count"></div>
   </section>
 
@@ -256,7 +262,7 @@ function renderList() {
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
-      <td class="first"><div class="fc"><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span>${s.group === "banka" ? '<span class="tag">banka</span>' : ""}<span class="nm">${s.name || ""}</span></div></div></td>
+      <td class="first"><div class="fc"><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span>${s.group === "banka" ? '<span class="tag">banka</span>' : ""}<span class="nm">${s.name || ""}</span></div></div></td>
       <td class="n">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${mult(s.pe)}</td>
@@ -266,11 +272,11 @@ function renderList() {
       <td class="n">${mult(s.peg)}</td>
       <td class="n ${sign(val(s, "op"))}">${pct(val(s, "op"))}</td>
       <td class="n ${sign(val(s, "net"))}">${pct(val(s, "net"))}</td>
-      <td class="n dim">${per(s.last_period)}</td>
     </tr>`).join("");
   if (!rows.length && view === "fav" && !favs.size)
-    $("#tbl tbody").innerHTML = `<tr><td colspan="11" class="empty">Henüz favorin yok. "Tümü"ne geçip hisselerin yanındaki ☆ işaretine dokun.</td></tr>`;
+    $("#tbl tbody").innerHTML = `<tr><td colspan="10" class="empty">Henüz favorin yok. "Tümü"ne geçip hisselerin yanındaki ☆ işaretine dokun.</td></tr>`;
   document.querySelectorAll("#tbl th").forEach(th => th.classList.toggle("sorted", th.dataset.k === k));
+  const tw = $("#tbl").parentElement; $("#hint").classList.toggle("show", tw.scrollWidth > tw.clientWidth + 4);
   $("#count").textContent = `${rows.length} / ${state.stocks.length} hisse · "a.d." = zarar, negatif özkaynak veya negatif FAVÖK · PEG yalnızca kâr büyüyorsa hesaplanır`;
 }
 
@@ -337,6 +343,7 @@ function route() {
   if (sym) { renderDetail(sym); window.scrollTo(0, 0); } else renderList();
 }
 window.addEventListener("hashchange", route);
+window.addEventListener("resize", () => { const tw = $("#tbl").parentElement; $("#hint").classList.toggle("show", tw.scrollWidth > tw.clientWidth + 4); });
 ["#q", "#fPe", "#fPb", "#fEv", "#fNd", "#fPeg", "#fOp", "#fNet"].forEach(id => $(id).addEventListener("input", renderList));
 $("#tbl thead").addEventListener("click", e => {
   const k = e.target.closest("th")?.dataset.k; if (!k) return;
