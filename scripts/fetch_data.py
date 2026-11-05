@@ -120,6 +120,58 @@ def df_to_table(df) -> dict:
     return {"columns": cols, "rows": rows}
 
 
+# ------------------------------------------------------- şirket kartı oranları
+
+def _tr_num(txt: str):
+    """'-1.234,5' -> -1234.5 (işareti korur; borsapy net borçta eksiyi siliyor)."""
+    txt = txt.strip().replace("\xa0", "")
+    neg = txt.startswith("-") or txt.startswith("(")
+    num = re.sub(r"[^\d,]", "", txt).replace(",", ".")
+    if not num:
+        return None
+    try:
+        v = float(num)
+    except ValueError:
+        return None
+    return -v if neg else v
+
+
+def company_metrics(prov, symbol: str) -> dict:
+    """İş Yatırım şirket kartındaki 'Cari Değerler' tablosu."""
+    url = f"https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/sirket-karti.aspx?hisse={symbol}"
+    out = {"market_cap": None, "pe_ratio": None, "pb_ratio": None, "ev_ebitda": None, "net_debt": None}
+    html = None
+    for attempt in range(3):
+        try:
+            r = prov._client.get(url, timeout=15)  # noqa: SLF001
+            r.raise_for_status()
+            html = r.text
+            break
+        except Exception:  # noqa: BLE001
+            time.sleep(1 + attempt)
+    if not html:
+        return out
+    i = html.find("Cari Değerler")
+    if i < 0:
+        return out
+    for label, value in re.findall(r"<th[^>]*>([^<]+)</th>\s*<td[^>]*>([^<]+)</td>", html[i:i + 3000]):
+        label = label.strip()
+        v = _tr_num(value)
+        if v is None:
+            continue
+        if "F/K" in label and "FD" not in label:
+            out["pe_ratio"] = v
+        elif "PD/DD" in label:
+            out["pb_ratio"] = v
+        elif "FD/FAVÖK" in label:
+            out["ev_ebitda"] = v
+        elif "Piyasa Değeri" in label:
+            out["market_cap"] = v * 1_000_000   # mnTL
+        elif "Net Borç" in label:
+            out["net_debt"] = v * 1_000_000     # mnTL
+    return out
+
+
 # -------------------------------------------------------------- tek hisse
 
 ROWS = {
@@ -247,11 +299,7 @@ def process(symbol: str, name: str = "") -> dict | None:
     last_equity = next((equity.get(c) for c in cols if equity.get(c) is not None), None)
 
     # Piyasa değeri ve İş Yatırım'ın hesapladığı oranlar
-    metrics = {}
-    try:
-        metrics = t._get_isyatirim().get_company_metrics(symbol)  # noqa: SLF001
-    except Exception:  # noqa: BLE001
-        pass
+    metrics = company_metrics(t._get_isyatirim(), symbol)  # noqa: SLF001
     mcap = clean(metrics.get("market_cap"))
     price = None
     try:  # önce İş Yatırım'ın hızlı fiyat servisi
@@ -272,6 +320,22 @@ def process(symbol: str, name: str = "") -> dict | None:
     # Kendi hesabımız (kaynak oranı yoksa yedek)
     pe_calc = ratio(mcap, net_ttm) if net_ttm and net_ttm > 0 else None
     pb_calc = ratio(mcap, last_equity) if last_equity and last_equity > 0 else None
+    pe = clean(metrics.get("pe_ratio")) or pe_calc
+    pb = clean(metrics.get("pb_ratio")) or pb_calc
+
+    # FAVÖK (12 ay): İş Yatırım'ın FD/FAVÖK'ünden geri hesaplanır -> FD = piyasa değ. + net borç
+    ev_ebitda = clean(metrics.get("ev_ebitda"))
+    net_debt = clean(metrics.get("net_debt"))
+    ev = mcap + net_debt if (mcap is not None and net_debt is not None) else None
+    ebitda = ev / ev_ebitda if (ev is not None and ev_ebitda) else None
+    nd_ebitda = net_debt / ebitda if (net_debt is not None and ebitda and ebitda > 0) else None
+
+    # PEG = F/K ÷ (yıllık net kâr büyümesi, %). Büyüme: son 12 ay vs bir önceki yılın 12 ayı.
+    net_ttm_prev = ttm(series["net_parent"], cols_all[4:])
+    growth = None
+    if net_ttm is not None and net_ttm_prev and net_ttm_prev > 0:
+        growth = net_ttm / net_ttm_prev - 1
+    peg = pe / (growth * 100) if (pe and pe > 0 and growth and growth > 0) else None
 
     summary = {
         "symbol": symbol,
@@ -280,9 +344,14 @@ def process(symbol: str, name: str = "") -> dict | None:
         "last_period": cols[0],
         "price": price,
         "market_cap": mcap,
-        "pe": clean(metrics.get("pe_ratio")) or pe_calc,
-        "pb": clean(metrics.get("pb_ratio")) or pb_calc,
-        "ev_ebitda": clean(metrics.get("ev_ebitda")),
+        "pe": pe,
+        "pb": pb,
+        "ev_ebitda": ev_ebitda,
+        "net_debt": net_debt,
+        "ebitda_ttm": ebitda,
+        "nd_ebitda": nd_ebitda,
+        "net_growth": growth,
+        "peg": peg,
         "revenue_ttm": rev_ttm,
         "operating_ttm": op_ttm,
         "net_ttm": net_ttm,

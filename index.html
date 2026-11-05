@@ -98,6 +98,9 @@ tbody tr:hover{background:var(--chip)}
       <label>Ara<input id="q" placeholder="Kod veya şirket adı"></label>
       <label>F/K en çok<input type="number" id="fPe" step="0.5" placeholder="—"></label>
       <label>PD/DD en çok<input type="number" id="fPb" step="0.1" placeholder="—"></label>
+      <label>FD/FAVÖK en çok<input type="number" id="fEv" step="0.5" placeholder="—"></label>
+      <label>Net borç/FAVÖK en çok<input type="number" id="fNd" step="0.5" placeholder="—"></label>
+      <label>PEG en çok<input type="number" id="fPeg" step="0.1" placeholder="—"></label>
       <label>Esas faal. marjı ≥ %<input type="number" id="fOp" step="1" placeholder="—"></label>
       <label>Net marj ≥ %<input type="number" id="fNet" step="1" placeholder="—"></label>
       <label>Marj dönemi
@@ -112,6 +115,9 @@ tbody tr:hover{background:var(--chip)}
           <th data-k="market_cap" class="n">Piy. Değeri</th>
           <th data-k="pe" class="n">F/K</th>
           <th data-k="pb" class="n">PD/DD</th>
+          <th data-k="ev_ebitda" class="n" title="Firma değeri / son 12 ay FAVÖK">FD/FAVÖK</th>
+          <th data-k="nd_ebitda" class="n" title="Net borç / son 12 ay FAVÖK. Negatif = net nakit">Net Borç/FAVÖK</th>
+          <th data-k="peg" class="n" title="F/K ÷ yıllık net kâr büyümesi (%)">PEG</th>
           <th data-k="op" class="n">Esas Faal. Marjı</th>
           <th data-k="net" class="n">Net Kâr Marjı</th>
           <th data-k="last_period" class="n">Son Dönem</th>
@@ -157,6 +163,8 @@ function money(v) {
   return nf(0).format(v);
 }
 const mult = v => v == null ? "—" : (v < 0 ? "a.d." : nf(2).format(v));
+const ndx = v => v == null ? "—" : (v < 0 ? "net nakit" : nf(2).format(v));
+const LOW_GOOD = ["pe", "pb", "ev_ebitda", "nd_ebitda", "peg"];
 const pct = v => v == null ? "—" : "%" + nf(1).format(v * 100);
 const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
 const per = p => p ? p.replace(/(\d{4})Q(\d)/, (_, y, q) => `${y}/${q * 3}`) : "—";
@@ -195,10 +203,14 @@ function renderList() {
   const q = $("#q").value.trim().toLocaleUpperCase("tr-TR");
   const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? null : v; };
   const pe = num("#fPe"), pb = num("#fPb"), op = num("#fOp"), net = num("#fNet");
+  const ev = num("#fEv"), nd = num("#fNd"), pg = num("#fPeg");
   let rows = state.stocks.filter(s => {
     if (q && !s.symbol.includes(q) && !(s.name || "").toLocaleUpperCase("tr-TR").includes(q)) return false;
     if (pe != null && (s.pe == null || s.pe < 0 || s.pe > pe)) return false;
     if (pb != null && (s.pb == null || s.pb < 0 || s.pb > pb)) return false;
+    if (ev != null && (s.ev_ebitda == null || s.ev_ebitda < 0 || s.ev_ebitda > ev)) return false;
+    if (nd != null && (s.nd_ebitda == null || s.nd_ebitda > nd)) return false;
+    if (pg != null && (s.peg == null || s.peg > pg)) return false;
     if (op != null && (val(s, "op") == null || val(s, "op") * 100 < op)) return false;
     if (net != null && (val(s, "net") == null || val(s, "net") * 100 < net)) return false;
     return true;
@@ -207,7 +219,7 @@ function renderList() {
   rows.sort((a, b) => {
     let x = val(a, k), y = val(b, k);
     if (x == null) return 1; if (y == null) return -1;
-    if (k === "pe" || k === "pb") { if (x < 0) return 1; if (y < 0) return -1; }
+    if (k === "pe" || k === "pb" || k === "ev_ebitda") { if (x < 0) return 1; if (y < 0) return -1; }
     return (x > y ? 1 : x < y ? -1 : 0) * dir;
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
@@ -217,12 +229,15 @@ function renderList() {
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${mult(s.pe)}</td>
       <td class="n">${mult(s.pb)}</td>
+      <td class="n">${mult(s.ev_ebitda)}</td>
+      <td class="n ${s.nd_ebitda != null && s.nd_ebitda < 0 ? "pos" : ""}">${ndx(s.nd_ebitda)}</td>
+      <td class="n">${mult(s.peg)}</td>
       <td class="n ${sign(val(s, "op"))}">${pct(val(s, "op"))}</td>
       <td class="n ${sign(val(s, "net"))}">${pct(val(s, "net"))}</td>
       <td class="n dim">${per(s.last_period)}</td>
     </tr>`).join("");
   document.querySelectorAll("#tbl th").forEach(th => th.classList.toggle("sorted", th.dataset.k === k));
-  $("#count").textContent = `${rows.length} / ${state.stocks.length} hisse · F/K ve PD/DD'de "a.d." = zarar veya negatif özkaynak`;
+  $("#count").textContent = `${rows.length} / ${state.stocks.length} hisse · "a.d." = zarar, negatif özkaynak veya negatif FAVÖK · PEG yalnızca kâr büyüyorsa hesaplanır`;
 }
 
 /* ---------- detay ---------- */
@@ -235,9 +250,13 @@ async function renderDetail(sym) {
   const tile = (k, v, s, cls = "") => `<div class="panel tile"><div class="k">${k}</div><div class="v num ${cls}">${v}</div><div class="s">${s}</div></div>`;
   $("#tiles").innerHTML =
     tile("F/K", mult(d.pe), "Net kâr: " + money(d.net_ttm) + " (12 ay)") +
-    tile("PD/DD", mult(d.pb), "FD/FAVÖK: " + mult(d.ev_ebitda)) +
+    tile("PD/DD", mult(d.pb), "Özkaynak: " + money(d.quarters?.[0]?.equity)) +
     tile("Esas faaliyet marjı", pct(d.op_margin_ttm), "Son çeyrek: " + pct(d.op_margin_q), sign(d.op_margin_ttm)) +
-    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm));
+    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm)) +
+    tile("FD/FAVÖK", mult(d.ev_ebitda), "FAVÖK: " + money(d.ebitda_ttm) + " (12 ay)") +
+    tile("Net borç/FAVÖK", ndx(d.nd_ebitda), "Net borç: " + money(d.net_debt), d.nd_ebitda != null && d.nd_ebitda < 0 ? "pos" : (d.nd_ebitda > 3 ? "neg" : "")) +
+    tile("PEG", mult(d.peg), "Net kâr büyümesi: " + pct(d.net_growth) + " (yıllık)") +
+    tile("Piyasa değeri", money(d.market_cap), "FD: " + money(d.market_cap != null && d.net_debt != null ? d.market_cap + d.net_debt : null));
 
   const qs = [...d.quarters].reverse();
   const css = getComputedStyle(document.documentElement);
@@ -265,7 +284,7 @@ async function renderDetail(sym) {
 
   $("#qTbl").innerHTML = `<thead><tr><th>Dönem</th><th class="n">Satışlar</th><th class="n">Brüt kâr</th><th class="n">Esas faal. kârı</th><th class="n">Net kâr</th><th class="n">Esas faal. marjı</th><th class="n">Net marj</th><th class="n">Özkaynak</th></tr></thead><tbody>` +
     d.quarters.map(q => `<tr><td>${per(q.period)}</td><td class="n">${money(q.revenue)}</td><td class="n">${money(q.gross)}</td><td class="n ${sign(q.operating)}">${money(q.operating)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.op_margin)}">${pct(q.op_margin)}</td><td class="n ${sign(q.net_margin)}">${pct(q.net_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
-  $("#qNote").textContent = "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır.";
+  $("#qNote").textContent = "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır. FD/FAVÖK ve net borç İş Yatırım şirket kartından; FAVÖK buradan geri hesaplanır. PEG nominal büyümeyle hesaplanır, yüksek enflasyonda olduğundan düşük görünebilir.";
 
   renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
 }
@@ -284,10 +303,10 @@ function route() {
   if (sym) { renderDetail(sym); window.scrollTo(0, 0); } else renderList();
 }
 window.addEventListener("hashchange", route);
-["#q", "#fPe", "#fPb", "#fOp", "#fNet"].forEach(id => $(id).addEventListener("input", renderList));
+["#q", "#fPe", "#fPb", "#fEv", "#fNd", "#fPeg", "#fOp", "#fNet"].forEach(id => $(id).addEventListener("input", renderList));
 $("#tbl thead").addEventListener("click", e => {
   const k = e.target.closest("th")?.dataset.k; if (!k) return;
-  state.sort = { k, dir: state.sort.k === k ? -state.sort.dir : (k === "symbol" || k === "pe" || k === "pb" ? 1 : -1) };
+  state.sort = { k, dir: state.sort.k === k ? -state.sort.dir : (k === "symbol" || LOW_GOOD.includes(k) ? 1 : -1) };
   renderList();
 });
 $("#tbl tbody").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) location.hash = tr.dataset.s; });
@@ -320,6 +339,7 @@ function makeDemo() {
     const mcap = base * (2 + rnd() * 6), netT = sum("net");
     const s = { symbol: sym, name, group, last_period: quarters[0].period, price: 10 + rnd() * 300, market_cap: mcap,
       pe: netT > 0 ? mcap / netT : -1, pb: mcap / quarters[0].equity, ev_ebitda: 3 + rnd() * 10,
+      net_debt: (rnd() - .3) * mcap * .4, nd_ebitda: (rnd() - .3) * 4, net_growth: rnd() * .8 - .2, peg: rnd() > .3 ? rnd() * 2 : null, ebitda_ttm: mcap / 8,
       revenue_ttm: sum("revenue"), operating_ttm: sum("operating"), net_ttm: netT,
       op_margin_ttm: sum("operating") / sum("revenue"), net_margin_ttm: netT / sum("revenue"),
       op_margin_q: quarters[0].op_margin, net_margin_q: quarters[0].net_margin };
