@@ -125,11 +125,11 @@ def df_to_table(df) -> dict:
 ROWS = {
     # anahtar: (desenler, hariç tutulacaklar)
     "revenue":   ([r"^satis gelirleri$", r"^hasilat$", r"^satis gelirleri"], []),
-    "gross":     ([r"^brut kar", r"^ticari faaliyetlerden brut kar"], []),
+    "gross":     ([r"^brut kar zarar$", r"^brut kar"], []),
     # Esas faaliyet karı: diğer faaliyet gelir/giderleri dahil, finansman öncesi
-    "operating": ([r"^faaliyet kari", r"^esas faaliyet kari"], [r"^net faaliyet"]),
-    "net_parent":([r"ana ortaklik paylari", r"ana ortakliga ait"], [r"ozkaynak", r"kontrol gucu olmayan"]),
-    "net":       ([r"^donem net kar", r"^donem kari", r"^net donem kari"], []),
+    "operating": ([r"^faaliyet kari zarari$", r"^esas faaliyet kari"], [r"oncesi"]),
+    "net_parent":([r"^ana ortaklik paylari$", r"ana ortakliga ait"], [r"ozkaynak", r"kontrol gucu olmayan"]),
+    "net":       ([r"^donem kari zarari$", r"^donem net kar", r"^net donem kari"], []),
 }
 
 EQUITY_ROWS = {
