@@ -212,6 +212,14 @@ def ratio(a, b):
     return a / b
 
 
+def margin(a, b):
+    """Kâr marjı; satış sıfıra yakın/negatifse ya da sonuç ±%1000'i aşıyorsa anlamsız (None)."""
+    if a is None or b is None or b <= 0:
+        return None
+    m = a / b
+    return m if abs(m) <= 10 else None
+
+
 def df_to_table(df) -> dict:
     cols = list(df.columns)
     rows = []
@@ -385,7 +393,12 @@ def process(symbol: str, name: str = "") -> dict | None:
         # yıllık büyümeyi belirgin biçimde (en az 2 kat) daha tutarlı yapıyorsa o seçilir.
         s_t = yoy_consistency(variants["tms29"]["revenue"], cols_all)
         s_u = yoy_consistency(variants["usd"]["revenue"], cols_all)
-        method = "usd" if (s_t is not None and s_u is not None and s_u < 0.5 * s_t) else "tms29"
+        def negs(single):  # belirgin negatif satış çeyreği sayısı (yanlış varsayım işareti)
+            vals = [abs(v) for v in single.values() if v]
+            mx = max(vals) if vals else 0
+            return sum(1 for c in cols_all[:QUARTERS] if single.get(c) is not None and single[c] < -0.01 * mx)
+        method = "usd" if (s_t is not None and s_u is not None and s_u < 0.5 * s_t
+                           and negs(variants["usd"]["revenue"]) <= negs(variants["tms29"]["revenue"])) else "tms29"
     series = variants[method]
     use_adj = method == "tms29"   # reel (tek paraya çevrilmiş) mi?
 
@@ -410,8 +423,8 @@ def process(symbol: str, name: str = "") -> dict | None:
             "operating": series["operating"].get(c),
             "net": series["net_parent"].get(c),
             "equity": equity.get(c),
-            "op_margin": ratio(series["operating"].get(c), rev),
-            "net_margin": ratio(series["net_parent"].get(c), rev),
+            "op_margin": margin(series["operating"].get(c), rev),
+            "net_margin": margin(series["net_parent"].get(c), rev),
         })
 
     rev_ttm = ttm(series["revenue"], cols)
@@ -476,8 +489,8 @@ def process(symbol: str, name: str = "") -> dict | None:
         "revenue_ttm": rev_ttm,
         "operating_ttm": op_ttm,
         "net_ttm": net_ttm,
-        "op_margin_ttm": ratio(op_ttm, rev_ttm),
-        "net_margin_ttm": ratio(net_ttm, rev_ttm),
+        "op_margin_ttm": margin(op_ttm, rev_ttm),
+        "net_margin_ttm": margin(net_ttm, rev_ttm),
         "op_margin_q": quarters[0]["op_margin"],
         "net_margin_q": quarters[0]["net_margin"],
     }
