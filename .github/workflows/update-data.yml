@@ -10,6 +10,10 @@ on:
         description: "Sadece bu hisseler (boşluklu, ör. THYAO ASELS). Boş = hepsi"
         required: false
         default: ""
+      debug:
+        description: "Teşhis çıktısı (boş bırak)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -27,6 +31,7 @@ jobs:
       - run: python scripts/fetch_data.py ${{ github.event.inputs.symbols }}
         env:
           PYTHONUNBUFFERED: "1"
+          DEBUG_HTML: ${{ github.event.inputs.debug }}
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "veri-botu"

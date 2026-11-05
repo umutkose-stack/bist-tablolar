@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import sys
 import time
@@ -151,6 +152,13 @@ def company_metrics(prov, symbol: str) -> dict:
             time.sleep(1 + attempt)
     if not html:
         return out
+    out["sector"] = None
+    if os.environ.get("DEBUG_HTML"):
+        j = html.find("Sektör")
+        print(f"--- {symbol} HTML (Sektör @ {j}) ---\n{html[max(0, j-300):j+600] if j >= 0 else '(yok)'}\n---", flush=True)
+    m = re.search(r"Sekt[öo]r[^<]{0,20}</t[hd]>\s*<td[^>]*>\s*(?:<a[^>]*>)?\s*([^<]+?)\s*<", html)
+    if m:
+        out["sector"] = m.group(1).strip()
     i = html.find("Cari Değerler")
     if i < 0:
         return out
@@ -341,6 +349,7 @@ def process(symbol: str, name: str = "") -> dict | None:
         "symbol": symbol,
         "name": name,
         "group": "banka" if group == "UFRS" else "sanayi",
+        "sector": metrics.get("sector"),
         "last_period": cols[0],
         "price": price,
         "market_cap": mcap,
@@ -474,7 +483,7 @@ def main():
                 s = fut.result()
                 if not s:
                     raise RuntimeError("boş veri")
-                s["sector"] = sector_map.get(sym) or (old.get(sym) or {}).get("sector")
+                s["sector"] = sector_map.get(sym) or s.get("sector") or (old.get(sym) or {}).get("sector")
                 if s["sector"]:  # detay dosyasına da yaz
                     fp = STOCKS / f"{sym}.json"
                     try:
@@ -490,11 +499,18 @@ def main():
                 if sym in old:
                     results.append(old[sym])
 
+    # Belirli hisseler çalıştırıldıysa diğerlerinin eski verisini koru
+    merged = results
+    if sys.argv[1:]:
+        done = {r["symbol"] for r in results}
+        merged = results + [v for k, v in old.items() if k not in done]
+        failed = [f for f in failed if f not in old]
+
     out = {
         "updated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "demo": False,
         "failed": failed,
-        "stocks": sorted(results, key=lambda s: s["symbol"]),
+        "stocks": sorted(merged, key=lambda s: s["symbol"]),
     }
     summary_path.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
     print(f"\nBitti: {len(results)} hisse, {len(failed)} hata, {time.time()-t0:.0f} sn")
