@@ -152,14 +152,6 @@ def company_metrics(prov, symbol: str) -> dict:
             time.sleep(1 + attempt)
     if not html:
         return out
-    out["sector"] = None
-    if os.environ.get("DEBUG_HTML"):
-        for mm in list(re.finditer(r"Sekt[öo]r|Faaliyet Alan", html))[:14]:
-            j = mm.start()
-            print(f"--- {symbol} @{j}: " + re.sub(r"\s+", " ", html[max(0, j-120):j+260]), flush=True)
-    m = re.search(r"Sekt[öo]r[^<]{0,20}</t[hd]>\s*<td[^>]*>\s*(?:<a[^>]*>)?\s*([^<]+?)\s*<", html)
-    if m:
-        out["sector"] = m.group(1).strip()
     i = html.find("Cari Değerler")
     if i < 0:
         return out
@@ -350,7 +342,6 @@ def process(symbol: str, name: str = "") -> dict | None:
         "symbol": symbol,
         "name": name,
         "group": "banka" if group == "UFRS" else "sanayi",
-        "sector": metrics.get("sector"),
         "last_period": cols[0],
         "price": price,
         "market_cap": mcap,
@@ -384,47 +375,23 @@ def process(symbol: str, name: str = "") -> dict | None:
 
 # ------------------------------------------------------------------ ana akış
 
-def build_sector_map() -> dict[str, str]:
-    """İş Yatırım hisse tarama ekranından sektör -> hisse eşlemesi (sektör başına bir istek)."""
-    from borsapy._providers.isyatirim_screener import get_screener_provider
-    prov = get_screener_provider()
-    try:
-        sectors = prov.get_sectors()
-    except Exception as e:  # noqa: BLE001
-        print(f"Sektör listesi alınamadı: {e}", flush=True)
-        sectors = []
-    if not sectors:  # sayfadaki açılır listenin kimliği değişmiş olabilir: içeriğinden bul
-        try:
-            prov._init_session()  # noqa: SLF001
-            html = prov._get(prov.PAGE_URL).text  # noqa: SLF001
-            for sel in re.findall(r"<select[^>]*>(.*?)</select>", html, flags=re.S):
-                if "Sektör" not in sel:
-                    continue
-                opts = re.findall(r'<option[^>]*value="([^"]*)"[^>]*>([^<]+)</option>', sel)
-                cand = [{"id": v.strip(), "name": n.strip()} for v, n in opts if v.strip() and "Seçiniz" not in n]
-                if len(cand) > len(sectors):
-                    sectors = cand
-            print(f"Sektör listesi sayfadan: {len(sectors)} ({', '.join(x['name'] for x in sectors[:6])}…)", flush=True)
-        except Exception as e:  # noqa: BLE001
-            print(f"Sektör sayfası okunamadı: {e}", flush=True)
-    out: dict[str, str] = {}
-    for sec in sectors:
-        name = (sec.get("name") or "").strip()
-        if not name:
-            continue
-        rows = []
-        for key in (sec.get("id"), name):  # kaynak bazen id, bazen ad bekliyor
-            if not key:
-                continue
-            try:
-                rows = prov.screen(criterias=[("7", "0", "100000000", "False")], sector=str(key))
-            except Exception:  # noqa: BLE001
-                rows = []
-            if rows:
-                break
-        for r in rows:
-            out.setdefault(r["symbol"], name)
-    print(f"Sektör: {len(sectors)} sektör, {len(out)} hisse eşlendi", flush=True)
+def build_sector_map() -> dict[str, dict]:
+    """TradingView tarayıcısından tüm BIST hisselerinin sektör/alt sektörü (tek istek)."""
+    from tradingview_screener import Query
+    from sectors_tr import tr_label
+    _, df = (Query().set_markets("turkey").select("name", "sector", "industry")
+             .limit(3000).get_scanner_data())
+    out: dict[str, dict] = {}
+    unmapped = set()
+    for _, r in df.iterrows():
+        sym = str(r.get("name") or str(r["ticker"]).split(":")[-1]).upper()
+        label, main = tr_label(r.get("sector"), r.get("industry"))
+        if label:
+            out[sym] = {"sector": label, "sector_main": main, "industry_en": r.get("industry")}
+            from sectors_tr import INDUSTRY_TR
+            if r.get("industry") and r.get("industry") not in INDUSTRY_TR:
+                unmapped.add(r.get("industry"))
+    print(f"Sektör: {len(out)} hisse eşlendi; çevrilmemiş alt sektörler: {sorted(unmapped)[:30]}", flush=True)
     return out
 
 
@@ -498,11 +465,15 @@ def main():
                 s = fut.result()
                 if not s:
                     raise RuntimeError("boş veri")
-                s["sector"] = sector_map.get(sym) or s.get("sector") or (old.get(sym) or {}).get("sector")
+                sec = sector_map.get(sym) or {}
+                prev = old.get(sym) or {}
+                s["sector"] = sec.get("sector") or prev.get("sector")
+                s["sector_main"] = sec.get("sector_main") or prev.get("sector_main")
                 if s["sector"]:  # detay dosyasına da yaz
                     fp = STOCKS / f"{sym}.json"
                     try:
-                        d = json.loads(fp.read_text(encoding="utf-8")); d["sector"] = s["sector"]
+                        d = json.loads(fp.read_text(encoding="utf-8"))
+                        d["sector"], d["sector_main"] = s["sector"], s["sector_main"]
                         fp.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
                     except Exception:  # noqa: BLE001
                         pass
