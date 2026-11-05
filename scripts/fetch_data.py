@@ -19,6 +19,7 @@ import math
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutTimeout, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -30,7 +31,8 @@ STOCKS = DATA / "stocks"
 WATCHLIST = ROOT / "watchlist.txt"
 
 QUARTERS = 12          # kaç çeyrek geriye gidilsin
-SLEEP = 1.5            # istekler arası bekleme (sn) - kaynağı yormamak için
+WORKERS = 6            # aynı anda işlenen hisse sayısı (çok artırma: kaynak engelleyebilir)
+PRICE_TIMEOUT = 8      # fiyat sorgusu en fazla kaç sn beklesin
 
 # İş Yatırım çeyreklik gelir tablosu değerleri yıl başından itibaren KÜMÜLATİF gelir.
 # (3A, 6A, 9A, 12A). Tek çeyrek değerini fark alarak buluyoruz.
@@ -206,9 +208,11 @@ def process(symbol: str, name: str = "") -> dict | None:
         pass
     mcap = clean(metrics.get("market_cap"))
     price = None
-    try:
-        price = clean(t.fast_info["last_price"])
-    except Exception:  # noqa: BLE001
+    try:  # fiyat yavaş bir kaynaktan geliyor; takılırsa beklemeden geç
+        ex = ThreadPoolExecutor(1)
+        price = clean(ex.submit(lambda: t.fast_info["last_price"]).result(timeout=PRICE_TIMEOUT))
+        ex.shutdown(wait=False)
+    except (FutTimeout, Exception):  # noqa: BLE001
         pass
 
     # Kendi hesabımız (kaynak oranı yoksa yedek)
@@ -265,7 +269,8 @@ def main():
 
     # Şirket adlarını tamamla
     try:
-        names = dict(zip(bp.companies()["ticker"], bp.companies()["name"]))
+        comp = bp.companies()
+        names = dict(zip(comp["ticker"], comp["name"]))
     except Exception:  # noqa: BLE001
         names = {}
 
@@ -279,20 +284,27 @@ def main():
             pass
 
     results, failed = [], []
-    for i, (sym, name) in enumerate(targets, 1):
-        try:
-            s = process(sym, name or names.get(sym, ""))
-            if s:
+    n = len(targets)
+
+    def work(item):
+        sym, name = item
+        return process(sym, name or names.get(sym, ""))
+
+    with ThreadPoolExecutor(WORKERS) as ex:
+        futs = {ex.submit(work, it): it[0] for it in targets}
+        for i, fut in enumerate(as_completed(futs), 1):
+            sym = futs[fut]
+            try:
+                s = fut.result()
+                if not s:
+                    raise RuntimeError("boş veri")
                 results.append(s)
-                print(f"[{i}/{len(targets)}] {sym} ✓ {s['last_period']}")
-            else:
-                raise RuntimeError("boş veri")
-        except Exception as e:  # noqa: BLE001
-            failed.append(sym)
-            print(f"[{i}/{len(targets)}] {sym} ✗ {e}")
-            if sym in old:
-                results.append(old[sym])
-        time.sleep(SLEEP)
+                print(f"[{i}/{n}] {sym} ✓ {s['last_period']}", flush=True)
+            except Exception as e:  # noqa: BLE001
+                failed.append(sym)
+                print(f"[{i}/{n}] {sym} ✗ {e}", flush=True)
+                if sym in old:
+                    results.append(old[sym])
 
     out = {
         "updated_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
