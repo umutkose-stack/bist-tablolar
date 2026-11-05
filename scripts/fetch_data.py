@@ -112,7 +112,7 @@ def to_single_quarters(series: dict[str, float | None]) -> dict[str, float | Non
 CPI: dict[str, float] = {}   # "YYYY-MM" -> zincirlenmiş TÜFE endeksi
 
 # Fonksiyonel para birimi TL olmayan (USD/EUR) bilinen şirketler
-FX_FUNCTIONAL = {"THYAO", "PGSUS", "EREGL", "ISDMR", "TAVHL"}
+FX_FUNCTIONAL = {"THYAO", "PGSUS", "EREGL", "ISDMR", "TAVHL", "ENKAI"}  # + veriden otomatik tespit
 
 
 def load_cpi() -> dict[str, float]:
@@ -174,8 +174,29 @@ def to_base(cum: dict[str, float | None], available: set[str], base: str, mode: 
     out = {}
     for c, v in cum.items():
         im = cpi_at(money_date(c, available, base, mode))
-        out[c] = v * ib / im if (v is not None and ib and im) else None
+        if mode == "usd":
+            # TL dışı fonksiyonel para birimi: raporlar zaten nominal (ortalama kurla çevrilmiş).
+            # Kaynağın yıllık rakama uyguladığı güncellemeyi geri al -> raporlanan rakam.
+            io = cpi_at(c)
+            out[c] = v * io / im if (v is not None and io and im) else None
+        else:
+            out[c] = v * ib / im if (v is not None and ib and im) else None
     return out
+
+
+def yoy_consistency(single: dict[str, float | None], cols_desc: list[str]) -> float | None:
+    """Aynı çeyreğin yıllık büyümesi ardışık çeyreklerde ne kadar tutarlı (std, küçük = iyi).
+    Mevsimsellikten etkilenmez; yanlış para-tarihi varsayımı belirli çeyrekleri bozar."""
+    g = []
+    for c in cols_desc[:8]:
+        y, n = period_key(c)
+        a, b = single.get(c), single.get(f"{y - 1}Q{n}")
+        if a and b and a > 0 and b > 0:
+            g.append(math.log(a / b))
+    if len(g) < 5:
+        return None
+    mu = sum(g) / len(g)
+    return (sum((x - mu) ** 2 for x in g) / len(g)) ** .5
 
 
 def ttm(single: dict[str, float | None], cols_desc: list[str]) -> float | None:
@@ -360,9 +381,13 @@ def process(symbol: str, name: str = "") -> dict | None:
     elif symbol in FX_FUNCTIONAL:
         method = "usd"
     else:
-        method = "tms29"
+        # Fonksiyonel para birimi döviz olan şirketleri veriden tespit et: "usd" varsayımı
+        # yıllık büyümeyi belirgin biçimde (en az 2 kat) daha tutarlı yapıyorsa o seçilir.
+        s_t = yoy_consistency(variants["tms29"]["revenue"], cols_all)
+        s_u = yoy_consistency(variants["usd"]["revenue"], cols_all)
+        method = "usd" if (s_t is not None and s_u is not None and s_u < 0.5 * s_t) else "tms29"
     series = variants[method]
-    use_adj = method != "raw"
+    use_adj = method == "tms29"   # reel (tek paraya çevrilmiş) mi?
 
     cols = cols_all[:QUARTERS]
 

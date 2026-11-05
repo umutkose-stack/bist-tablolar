@@ -4,6 +4,8 @@ on:
   schedule:
     # Her gün 19:17 (TR saati 22:17) - bilanço dönemlerinde yeni açıklamaları yakalar
     - cron: "17 19 * * *"
+    # Yedek: GitHub zamanlanmış görevleri bazen geciktirir/atlar
+    - cron: "43 3 * * *"
   workflow_dispatch:   # Actions sekmesinden elle çalıştırma
     inputs:
       symbols:
