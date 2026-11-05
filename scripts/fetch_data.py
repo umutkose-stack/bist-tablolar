@@ -24,6 +24,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import borsapy as bp
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
@@ -137,23 +138,68 @@ EQUITY_ROWS = {
 }
 
 
-def fetch_statements(t: bp.Ticker):
-    """Önce sanayi (XI_29), olmazsa banka (UFRS) formatını dene."""
+def recent_quarters(n: int) -> list[tuple[int, int]]:
+    """Bugünden geriye, bitmiş son çeyrekten başlayarak (yıl, ay) listesi.
+    Henüz açıklanmamış çeyrek boş gelir ve sonra atılır; böylece yeni bilanço
+    açıklandığı gün yakalanır."""
+    now = datetime.now()
+    y, m = now.year, (now.month - 1) // 3 * 3  # bitmiş son çeyreğin son ayı
+    if m == 0:
+        y, m = y - 1, 12
+    out = []
+    for _ in range(n):
+        out.append((y, m))
+        m -= 3
+        if m == 0:
+            y, m = y - 1, 12
+    return out
+
+
+def _merge(parts):
+    parts = [p for p in parts if p is not None and not p.empty]
+    if not parts:
+        return None
+    base = parts[0]
+    for p in parts[1:]:
+        if len(p) == len(base) and list(p.index) == list(base.index):
+            base = pd.concat([base, p[[c for c in p.columns if c not in base.columns]]], axis=1)
+        else:  # şablon farklıysa ada göre birleştir (yinelenen adlarda ilki)
+            p = p[~p.index.duplicated()]
+            b = base[~base.index.duplicated()]
+            base = b.join(p[[c for c in p.columns if c not in b.columns]], how="outer")
+    return base
+
+
+def fetch_statements(t: bp.Ticker, symbol: str):
+    """Önce sanayi (XI_29), olmazsa banka (UFRS) formatını dene.
+    Her istek tüm tabloları birlikte döndürür; gelir tablosu ve bilançoyu tek istekten ayırırız."""
+    prov = t._get_isyatirim()  # noqa: SLF001
+    url = f"{prov.BASE_URL}/Data.aspx/MaliTablo"
+    periods = recent_quarters(QUARTERS + 4)
+    batches = [periods[i:i + 4] for i in range(0, len(periods), 4)]
     last_err = None
     for group in ("XI_29", "UFRS"):
-        try:
-            inc = t.get_income_stmt(quarterly=True, financial_group=group, last_n=QUARTERS + 3)
-            bal = t.get_balance_sheet(quarterly=True, financial_group=group, last_n=QUARTERS)
-            if inc is not None and not inc.empty:
-                return inc, bal, group
-        except Exception as e:  # noqa: BLE001
-            last_err = e
-    raise RuntimeError(f"tablo alınamadı: {last_err}")
+        inc_parts, bal_parts = [], []
+        for batch in batches:
+            params = {"companyCode": symbol, "exchange": "TRY", "financialGroup": group}
+            for i, (yy, pp) in enumerate(batch, 1):
+                params[f"year{i}"], params[f"period{i}"] = yy, pp
+            try:
+                data = prov._get(url, params=params).json()  # noqa: SLF001
+            except Exception as e:  # noqa: BLE001
+                last_err = e
+                continue
+            inc_parts.append(prov._parse_financial_response(data, batch, quarterly=True, statement_type="income_stmt"))  # noqa: SLF001
+            bal_parts.append(prov._parse_financial_response(data, batch, quarterly=True, statement_type="balance_sheet"))  # noqa: SLF001
+        inc = _merge(inc_parts)
+        if inc is not None and inc.notna().any().any():
+            return inc, _merge(bal_parts), group
+    raise RuntimeError(f"tablo alınamadı: {last_err or 'boş yanıt'}")
 
 
 def process(symbol: str, name: str = "") -> dict | None:
     t = bp.Ticker(symbol)
-    inc, bal, group = fetch_statements(t)
+    inc, bal, group = fetch_statements(t, symbol)
 
     cols_all = sorted([c for c in inc.columns if period_key(c) != (0, 0)], key=period_key, reverse=True)
     # Son çeyrek tamamen boş olabilir (henüz açıklanmamış) -> at
