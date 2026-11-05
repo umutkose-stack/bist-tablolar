@@ -116,6 +116,11 @@ OVERRIDES = {
     "GLYHO": ("Holding", "Holding"), "ECZYT": ("Holding", "Holding"),
     "BERA": ("Holding", "Holding"), "POLHO": ("Holding", "Holding"),
     "SISE": ("Cam", "Proses Sanayi"), "TRKCM": ("Cam", "Proses Sanayi"),
+    # kaynakta sektörü boş gelenler
+    "ISATR": ("Banka", "Finans"), "ISBTR": ("Banka", "Finans"), "ISCTR": ("Banka", "Finans"),
+    "EKGYO": ("GYO", "Finans"), "KRDMB": ("Demir Çelik", "Madencilik ve Metal"),
+    "KRDMD": ("Demir Çelik", "Madencilik ve Metal"), "AVTUR": ("Turizm", "Tüketici Hizmetleri"),
+    "ISGSY": ("Girişim Sermayesi", "Finans"), "VERTU": ("Girişim Sermayesi", "Finans"),
 }
 
 
