@@ -151,6 +151,11 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
 .tile .k{font:600 11px/1.4 var(--sans);letter-spacing:.14em;text-transform:uppercase}
 .tile .v{font:400 30px/1.1 var(--serif);margin:8px 0 4px}
 .tile .s{font-size:12px;color:var(--muted)}
+.tile .rel-s{margin-top:6px;padding-top:6px;border-top:1px solid var(--rule)}
+.tile .rel-s b{font-weight:600}
+.tiles .rel-s .rp{color:var(--pos)} .tiles .rel-s .rn{color:var(--neg)}
+.band .tile .rel-s{border-top-color:rgba(238,240,244,.14)}
+.band .rel-s .rp{color:var(--band-pos)} .band .rel-s .rn{color:var(--band-neg)}
 .chartbox{padding:18px;margin-bottom:28px}
 .cw{position:relative;height:270px}
 .sec{padding:18px;margin-bottom:28px}
@@ -467,16 +472,16 @@ async function renderDetail(sym) {
   $("#dSym").textContent = d.symbol; paintStar(d.symbol);
   $("#dName").textContent = (d.name || "") + (d.group === "banka" ? " · banka formatı" : "");
   $("#dPrice").textContent = (d.price != null ? nf(2).format(d.price) + " ₺ · " : "") + "Piy. değ. " + money(d.market_cap);
-  const tile = (k, v, s, cls = "") => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  const tile = (k, v, s, cls = "", rk = null) => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div>${rk ? relLine(d, rk) : ""}</div>`;
   $("#dEyebrow").textContent = [d.sector || (d.group === "banka" ? "Banka" : null), d.sector_main && d.sector_main !== d.sector ? d.sector_main : null, "son bilanço " + per(d.last_period)].filter(Boolean).join(" · ");
   $("#band").innerHTML =
-    tile("F/K", mult(d.pe), "Net kâr: " + money(d.net_ttm) + " (12 ay)") +
-    tile("PD/DD", mult(d.pb), "Özkaynak: " + money(d.quarters?.[0]?.equity)) +
-    tile("Esas faaliyet marjı", pct(d.op_margin_ttm), "Son çeyrek: " + pct(d.op_margin_q), sign(d.op_margin_ttm)) +
-    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm));
+    tile("F/K", mult(d.pe), "Net kâr: " + money(d.net_ttm) + " (12 ay)", "", "pe") +
+    tile("PD/DD", mult(d.pb), "Özkaynak: " + money(d.quarters?.[0]?.equity), "", "pb") +
+    tile("Esas faaliyet marjı", pct(d.op_margin_ttm), "Son çeyrek: " + pct(d.op_margin_q), sign(d.op_margin_ttm), "op_margin_ttm") +
+    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm), "net_margin_ttm");
   $("#tiles").innerHTML =
-    tile("FD/FAVÖK", mult(d.ev_ebitda), "FAVÖK: " + money(d.ebitda_ttm) + " (12 ay)") +
-    tile("Net borç/FAVÖK", ndx(d.nd_ebitda), "Net borç: " + money(d.net_debt), d.nd_ebitda != null && d.nd_ebitda < 0 ? "pos" : (d.nd_ebitda > 3 ? "neg" : "")) +
+    tile("FD/FAVÖK", mult(d.ev_ebitda), "FAVÖK: " + money(d.ebitda_ttm) + " (12 ay)", "", "ev_ebitda") +
+    tile("Net borç/FAVÖK", ndx(d.nd_ebitda), "Net borç: " + money(d.net_debt), d.nd_ebitda != null && d.nd_ebitda < 0 ? "pos" : (d.nd_ebitda > 3 ? "neg" : ""), "nd_ebitda") +
     tile("PEG", mult(d.peg), "Net kâr büyümesi: " + pct(d.net_growth) + " (yıllık)") +
     tile("Piyasa değeri", money(d.market_cap), "FD: " + money(d.market_cap != null && d.net_debt != null ? d.market_cap + d.net_debt : null));
 
@@ -663,14 +668,38 @@ const REL = [
 ];
 function median(a) { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; }
 function quant(b, q) { const i = (b.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return b[lo] + (b[hi] - b[lo]) * (i - lo); }
-function renderRelative(d) {
-  const box = $("#rel");
+function peerGroup(d) {
   let sec = d.sector, wide = false;
   let peers = sec ? state.stocks.filter(s => s.sector === sec) : [];
   if (peers.length < 5 && d.sector_main) {   // az şirketli sektörde ana sektöre geniş
     const wider = state.stocks.filter(s => s.sector_main === d.sector_main);
     if (wider.length > peers.length) { peers = wider; sec = d.sector_main; wide = true; }
   }
+  return { sec, wide, peers };
+}
+/* Kartların altındaki kısa satır: "Sektör medyanı 9,2 · %70 iskontolu" */
+function relLine(d, k) {
+  const m = REL.find(x => x.k === k); if (!m) return "";
+  const { sec, wide, peers } = peerGroup(d);
+  const valid = v => v != null && isFinite(v) && !(m.pos && v < 0);
+  const vals = peers.map(s => s[k]).filter(valid);
+  const all = state.stocks.map(s => s[k]).filter(valid);
+  const useSec = sec && vals.length >= 3;
+  const med = median(useSec ? vals : all);
+  if (med == null) return "";
+  const me = d[k];
+  let tail = "";
+  if (valid(me)) {
+    if (m.margin) { const dp = (me - med) * 100; tail = ` · <b class="${dp >= 0 ? "rp" : "rn"}">${dp >= 0 ? "+" : "−"}${nf(1).format(Math.abs(dp))} puan</b>`; }
+    else if (m.abs) tail = me < 0 ? ` · <b class="rp">net nakit</b>` : ` · <b class="${me <= med ? "rp" : "rn"}">${me <= med ? "daha az borçlu" : "daha borçlu"}</b>`;
+    else if (med > 0) { const pr = (me / med - 1) * 100; tail = ` · <b class="${pr <= 0 ? "rp" : "rn"}">%${nf(0).format(Math.abs(pr))} ${pr <= 0 ? "iskontolu" : "primli"}</b>`; }
+  }
+  const lbl = useSec ? (wide ? `${esc(sec)} medyanı` : "Sektör medyanı") : "BIST medyanı";
+  return `<div class="s rel-s" title="${useSec ? esc(sec) + " · " + vals.length + " şirket" : "Tüm BIST"}">${lbl} ${m.fmt(med)}${tail}</div>`;
+}
+function renderRelative(d) {
+  const box = $("#rel");
+  const { sec, wide, peers } = peerGroup(d);
   $("#relR").textContent = sec ? `${sec}${wide ? " (ana sektör)" : ""} · ${peers.length} şirket` : "";
   if (!sec || peers.length < 3) {
     box.innerHTML = `<p class="rtxt" style="padding:12px 0">${sec ? `“${esc(sec)}” sektöründe kıyas için yeterli şirket yok (en az 3 gerekir).` : "Bu hissenin sektör bilgisi yok."}</p>`;
