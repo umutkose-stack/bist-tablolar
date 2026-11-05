@@ -54,7 +54,7 @@ INDUSTRY_TR = {
     "Contract Drilling": "Sondaj", "Oilfield Services/Equipment": "Petrol Hizmetleri",
     # Proses sanayi
     "Chemicals: Major Diversified": "Kimya", "Chemicals: Specialty": "Kimya",
-    "Chemicals: Agricultural": "Gübre ve Tarım Kimyası", "Agricultural Commodities/Milling": "Tarım Ürünleri",
+    "Chemicals: Agricultural": "Gübre ve Tarım Kimyası", "Agricultural Commodities/Milling": "Gıda",
     "Textiles": "Tekstil", "Pulp & Paper": "Kağıt", "Containers/Packaging": "Ambalaj",
     "Industrial Specialties": "Endüstriyel Ürünler",
     # İmalat
@@ -116,6 +116,8 @@ OVERRIDES = {
     "GLYHO": ("Holding", "Holding"), "ECZYT": ("Holding", "Holding"),
     "BERA": ("Holding", "Holding"), "POLHO": ("Holding", "Holding"),
     "SISE": ("Cam", "Proses Sanayi"), "TRKCM": ("Cam", "Proses Sanayi"),
+    "LUKSK": ("Tekstil", "Proses Sanayi"), "OTTO": ("Holding", "Holding"),
+    "RUZYE": ("Metal ve Maden", "Madencilik ve Metal"),
     "SUWEN": ("Hazır Giyim", "Tüketim Ürünleri"), "DOAS": ("Otomotiv", "Dayanıklı Tüketim"),
     # kaynakta sektörü boş gelenler
     "ISATR": ("Banka", "Finans"), "ISBTR": ("Banka", "Finans"), "ISCTR": ("Banka", "Finans"),
