@@ -89,7 +89,7 @@ INDUSTRY_TR = {
     "Commercial Printing/Forms": "Matbaa",
     # İletişim / teknoloji
     "Major Telecommunications": "Telekom", "Wireless Telecommunications": "Telekom",
-    "Specialty Telecommunications": "Telekom", "Telecommunications Equipment": "Telekom Ekipmanı",
+    "Specialty Telecommunications": "Telekom", "Telecommunications Equipment": "Telekom",
     "Packaged Software": "Yazılım", "Information Technology Services": "Bilişim",
     "Internet Software/Services": "İnternet", "Data Processing Services": "Bilişim",
     "Computer Processing Hardware": "Donanım", "Computer Peripherals": "Donanım",
