@@ -378,7 +378,7 @@ def process(symbol: str, name: str = "") -> dict | None:
 def build_sector_map() -> dict[str, dict]:
     """TradingView tarayıcısından tüm BIST hisselerinin sektör/alt sektörü (tek istek)."""
     from tradingview_screener import Query
-    from sectors_tr import INDUSTRY_TR, tr_label
+    from sectors_tr import INDUSTRY_TR, OVERRIDES, tr_label
     _, df = (Query().set_markets("turkey").select("name", "sector", "industry")
              .limit(3000).get_scanner_data())
     out: dict[str, dict] = {}
@@ -387,7 +387,7 @@ def build_sector_map() -> dict[str, dict]:
         sym = str(r.get("name") or str(r["ticker"]).split(":")[-1]).upper()
         sec = r.get("sector") if isinstance(r.get("sector"), str) else None
         ind = r.get("industry") if isinstance(r.get("industry"), str) else None
-        label, main = tr_label(sec, ind)
+        label, main = OVERRIDES.get(sym) or tr_label(sec, ind)
         if label:
             out[sym] = {"sector": label, "sector_main": main}
             if ind and ind not in INDUSTRY_TR:

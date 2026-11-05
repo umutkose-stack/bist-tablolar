@@ -103,6 +103,19 @@ INDUSTRY_TR = {
     # Dağıtım
     "Wholesale Distributors": "Toptan Ticaret", "Food Distributors": "Gıda Dağıtım",
     "Electronics Distributors": "Elektronik Dağıtım",
+    "Computer Communications": "Bilişim", "Media Conglomerates": "Medya ve Eğlence",
+    "Miscellaneous": "Diğer", "Other Consumer Specialties": "Tüketim Ürünleri",
+}
+
+# Kaynağın yanlış ya da çok geniş sınıflandırdığı bilinen şirketler (elle düzeltme)
+OVERRIDES = {
+    "KCHOL": ("Holding", "Holding"), "SAHOL": ("Holding", "Holding"),
+    "DOHOL": ("Holding", "Holding"), "AGHOL": ("Holding", "Holding"),
+    "ALARK": ("Holding", "Holding"), "TKFEN": ("Holding", "Holding"),
+    "GSDHO": ("Holding", "Holding"), "NTHOL": ("Holding", "Holding"),
+    "GLYHO": ("Holding", "Holding"), "ECZYT": ("Holding", "Holding"),
+    "BERA": ("Holding", "Holding"), "POLHO": ("Holding", "Holding"),
+    "SISE": ("Cam", "Proses Sanayi"), "TRKCM": ("Cam", "Proses Sanayi"),
 }
 
 
