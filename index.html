@@ -15,7 +15,7 @@
   --rule:rgba(40,52,69,.16); --hover:rgba(40,52,69,.05);
   --pos:#1F6B45; --neg:#A3352D;
   --band:#283445; --band-ink:#EEF0F4; --band-muted:#AEB6C4; --band-pos:#8FD3A8; --band-neg:#F3A49C; --band-accent:#D9B27A;
-  --s1:#283445; --s2:#835D29;
+  --s1:#283445; --s2:#835D29; --s3:#3F7F68;
   --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
   --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -26,7 +26,7 @@
     --rule:rgba(227,231,238,.14); --hover:rgba(227,231,238,.05);
     --pos:#7CCB9A; --neg:#F09A90;
     --band:#222B38; --band-ink:#E3E7EE; --band-muted:#9AA4B4; --band-pos:#7CCB9A; --band-neg:#F09A90; --band-accent:#D4A96E;
-    --s1:#E3E7EE; --s2:#D4A96E;
+    --s1:#E3E7EE; --s2:#D4A96E; --s3:#7CCB9A;
   }
 }
 :root[data-theme="dark"]{
@@ -34,7 +34,7 @@
   --rule:rgba(227,231,238,.14); --hover:rgba(227,231,238,.05);
   --pos:#7CCB9A; --neg:#F09A90;
   --band:#222B38; --band-ink:#E3E7EE; --band-muted:#9AA4B4; --band-pos:#7CCB9A; --band-neg:#F09A90; --band-accent:#D4A96E;
-  --s1:#E3E7EE; --s2:#D4A96E;
+  --s1:#E3E7EE; --s2:#D4A96E; --s3:#7CCB9A;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -159,6 +159,51 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
 .full tr{cursor:default}
 #qTbl th,.full th{position:static;cursor:default}
 .note{font-size:12px;color:var(--muted);margin-top:10px}
+/* karşılaştırma */
+#compare{display:none}
+.cmp{appearance:none;-webkit-appearance:none;width:16px;height:16px;border:1px solid var(--ink);border-radius:3px;margin:1px 4px 0 0;cursor:pointer;flex:none;position:relative;background:transparent}
+.cmp:checked{background:var(--ink)}
+.cmp:checked::after{content:"";position:absolute;left:4px;top:1px;width:5px;height:9px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.cmp:disabled{opacity:.3;cursor:not-allowed}
+.cbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:10px;background:var(--band);color:var(--band-ink);border-radius:8px;padding:10px 10px 10px 16px;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:calc(100% - 32px)}
+.cbar[hidden]{display:none}
+.cbar-l{font:600 11px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--band-muted)}
+.cbar .pill{font:600 13px/1 var(--sans);border:1px solid rgba(238,240,244,.35);border-radius:4px;padding:5px 7px;margin-right:4px;white-space:nowrap}
+.cbar .go{font:600 13px/1 var(--sans);background:var(--accent);color:var(--on-accent);border:0;border-radius:6px;padding:10px 14px;cursor:pointer;white-space:nowrap}
+.cbar .go:disabled{opacity:.45;cursor:not-allowed}
+.cbar .x{font:inherit;font-size:20px;line-height:1;background:none;border:0;color:var(--band-muted);cursor:pointer;padding:4px 6px}
+.ctbl th,.ctbl td{padding:11px 14px}
+.ctbl th{position:static;cursor:default;font-size:12px}
+.ctbl th.n{font:400 22px/1.1 var(--serif);letter-spacing:0;text-transform:none;color:var(--ink)}
+.ctbl th.n small{display:block;font:500 11px/1.3 var(--sans);color:var(--muted);margin-top:4px}
+.ctbl tr{cursor:default}
+.ctbl td:first-child{font-weight:500}
+.ctbl td.best{color:var(--accent);font-weight:600}
+.ctbl td.best::after{content:" ●";font-size:9px;vertical-align:2px}
+.dright{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.ghost.sm{padding:7px 10px;font-size:12px}
+.ghost.on{background:var(--ink);color:var(--bg);border-style:solid}
+/* sektörle kıyas */
+.rel{padding:6px 18px}
+.rrow{display:grid;grid-template-columns:170px 92px 1fr 210px;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid var(--rule)}
+.rrow:last-child{border-bottom:0}
+.rrow .rk{font:600 11px/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase}
+.rrow .rv{font:400 24px/1 var(--serif)}
+.strip{position:relative;height:26px}
+.strip::before{content:"";position:absolute;left:0;right:0;top:13px;border-top:1px solid var(--rule)}
+.strip .dot{position:absolute;top:10px;width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.45;transform:translateX(-50%)}
+.strip .med{position:absolute;top:4px;height:18px;border-left:2px solid var(--ink);transform:translateX(-1px)}
+.strip .me{position:absolute;top:5px;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);transform:translateX(-50%);box-shadow:0 0 0 1px var(--accent)}
+.strip .lo,.strip .hi{position:absolute;top:-6px;font:10px var(--mono);color:var(--muted)}
+.strip .lo{left:0}.strip .hi{right:0}
+.rtxt{font-size:12px;color:var(--muted);line-height:1.45}
+.rtxt b{color:var(--ink);font-weight:600}
+.rtxt .good{color:var(--pos)} .rtxt .bad{color:var(--neg)}
+.rlegend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:10px 0 4px}
+.rlegend i{display:inline-block;vertical-align:-1px;margin-right:5px}
+.rlegend .a{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.rlegend .b{width:0;height:12px;border-left:2px solid var(--ink)}
+.rlegend .c{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.6}
 footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-size:12px;color:var(--muted)}
 
 @media (max-width:1000px){ #tbl{font-size:13px} #tbl th,#tbl td{padding-top:9px;padding-bottom:9px} .nm{max-width:120px} #tbl th{letter-spacing:.02em} }
@@ -183,6 +228,14 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
   .band .tile:nth-child(n+3){border-top:1px solid rgba(238,240,244,.12)}
   .tiles .tile:nth-child(n+3){border-top:1px solid var(--rule)}
   .band .tile .v{font-size:30px}
+  .rrow{grid-template-columns:1fr auto;gap:6px 12px}
+  .rrow .strip{grid-column:1 / -1;margin-top:12px}
+  .rrow .rtxt{grid-column:1 / -1}
+  .dright{align-items:flex-start}
+  .cbar{left:16px;right:16px;transform:none;padding:8px 8px 8px 12px;gap:6px}
+  .cbar-l{display:none}
+  #cbarList{flex:1;overflow:hidden;white-space:nowrap}
+  .wrap{padding-bottom:110px}
   .tile .v{font-size:26px}
 }
 </style>
@@ -257,25 +310,43 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
   <!-- DETAY -->
   <section id="detail">
     <button class="back" onclick="location.hash=''">← Tüm hisseler</button>
-    <div class="dhead"><div><p class="eyebrow" id="dEyebrow">Hisse</p><h2><button class="star" id="dStar" title="Favorilere ekle/çıkar">☆</button><span id="dSym"></span></h2><div class="meta" id="dName"></div></div><div class="meta num" id="dPrice"></div></div>
+    <div class="dhead"><div><p class="eyebrow" id="dEyebrow">Hisse</p><h2><button class="star" id="dStar" title="Favorilere ekle/çıkar">☆</button><span id="dSym"></span></h2><div class="meta" id="dName"></div></div><div class="dright"><div class="meta num" id="dPrice"></div><button type="button" class="ghost sm" id="dCmp">+ Karşılaştırmaya ekle</button></div></div>
     <div class="label"><span>01 / Temel oranlar</span><span class="r">son 12 ay</span></div>
     <div class="band" id="band"></div>
-    <div class="label"><span>02 / Değerleme ve borç</span></div>
+    <div class="label"><span>02 / Sektörle kıyas</span><span class="r" id="relR"></span></div>
+    <div class="panel sec rel" id="rel"></div>
+    <div class="label"><span>03 / Değerleme ve borç</span></div>
     <div class="tiles" id="tiles"></div>
-    <div class="label"><span>03 / Çeyreklik marjlar</span></div>
+    <div class="label"><span>04 / Çeyreklik marjlar</span></div>
     <div class="panel chartbox"><div class="cw"><canvas id="mChart"></canvas></div></div>
-    <div class="label"><span>04 / Çeyreklik özet</span><span class="r">tek çeyrek</span></div>
+    <div class="label"><span>05 / Çeyreklik özet</span><span class="r">tek çeyrek</span></div>
     <div class="panel sec">
       <div class="tablewrap"><table id="qTbl"></table></div>
       <div class="note" id="qNote"></div>
     </div>
-    <div class="label"><span>05 / Mali tablolar</span></div>
+    <div class="label"><span>06 / Mali tablolar</span></div>
     <div class="panel sec">
       <div class="tabs seg" id="fullTabs"><button data-v="income_statement" class="on">Gelir tablosu</button><button data-v="balance_sheet">Bilanço</button></div>
       <div class="tablewrap"><table class="full" id="fullTbl"></table></div>
       <div class="note">Gelir tablosu kaynakta yıl başından itibaren kümülatif verilir (3A, 6A, 9A, 12A).</div>
     </div>
   </section>
+  <!-- KARŞILAŞTIRMA -->
+  <section id="compare">
+    <button class="back" onclick="location.hash=''">← Tüm hisseler</button>
+    <div class="dhead"><div><p class="eyebrow">Yan yana karşılaştırma</p><h2 id="cTitle"></h2></div><div class="meta" id="cMeta"></div></div>
+    <div class="label"><span>01 / Çarpanlar ve kârlılık</span><span class="r">en iyi değer vurgulu</span></div>
+    <div class="panel"><div class="tablewrap"><table class="ctbl" id="cTbl"></table></div></div>
+    <div class="label"><span>02 / Esas faaliyet marjı</span><span class="r">tek çeyrek</span></div>
+    <div class="panel chartbox"><div class="cw"><canvas id="cOp"></canvas></div></div>
+    <div class="label"><span>03 / Net kâr marjı</span><span class="r">tek çeyrek</span></div>
+    <div class="panel chartbox"><div class="cw"><canvas id="cNet"></canvas></div></div>
+  </section>
+  <div class="cbar" id="cbar" hidden>
+    <span class="cbar-l">Karşılaştır</span><span id="cbarList"></span>
+    <button type="button" class="go" id="cbarGo">Karşılaştır →</button>
+    <button type="button" class="x" id="cbarClear" title="Seçimi temizle">×</button>
+  </div>
   <footer>Veri: İş Yatırım mali tabloları (borsapy ile). Yalnızca kişisel kullanım içindir; yatırım tavsiyesi değildir.</footer>
 </div>
 
@@ -371,7 +442,7 @@ function renderList() {
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
-      <td class="first"><div class="fc"><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
+      <td class="first"><div class="fc"><input type="checkbox" class="cmp" data-cmp="${s.symbol}" aria-label="${s.symbol} karşılaştır"${cmpSel.includes(s.symbol) ? " checked" : (cmpSel.length >= 3 ? " disabled" : "")}><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
       <td class="n c-price">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${mult(s.pe)}</td>
@@ -439,6 +510,11 @@ async function renderDetail(sym) {
   $("#qNote").textContent = "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır. FD/FAVÖK ve net borç İş Yatırım şirket kartından; FAVÖK buradan geri hesaplanır. PEG nominal büyümeyle hesaplanır, yüksek enflasyonda olduğundan düşük görünebilir.";
 
   renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
+  renderRelative(d);
+  const inC = cmpSel.includes(d.symbol);
+  $("#dCmp").textContent = inC ? "✓ Karşılaştırmada" : "+ Karşılaştırmaya ekle";
+  $("#dCmp").classList.toggle("on", inC);
+  $("#dCmp").disabled = !inC && cmpSel.length >= 3;
 }
 function renderFull(d, key) {
   const t = d[key];
@@ -449,10 +525,16 @@ function renderFull(d, key) {
 
 /* ---------- yönlendirme ve olaylar ---------- */
 function route() {
-  const sym = decodeURIComponent(location.hash.slice(1));
-  $("#listView").style.display = sym ? "none" : "";
+  const h = decodeURIComponent(location.hash.slice(1));
+  const cmp = h.startsWith("karsilastir/") ? h.slice(12).split(",").filter(Boolean).slice(0, 3) : null;
+  const sym = cmp ? "" : h;
+  $("#listView").style.display = h ? "none" : "";
   $("#detail").style.display = sym ? "block" : "none";
-  if (sym) { renderDetail(sym); window.scrollTo(0, 0); } else renderList();
+  $("#compare").style.display = cmp ? "block" : "none";
+  paintCbar();
+  if (cmp) { renderCompare(cmp); window.scrollTo(0, 0); }
+  else if (sym) { renderDetail(sym); window.scrollTo(0, 0); }
+  else renderList();
 }
 window.addEventListener("hashchange", route);
 window.addEventListener("resize", () => { const tw = $("#tbl").parentElement; $("#hint").classList.toggle("show", tw.scrollWidth > tw.clientWidth + 4); });
@@ -463,6 +545,8 @@ $("#tbl thead").addEventListener("click", e => {
   renderList();
 });
 $("#tbl tbody").addEventListener("click", e => {
+  const cb = e.target.closest("[data-cmp]");
+  if (cb) { e.stopPropagation(); toggleCmp(cb.dataset.cmp); return; }
   const sg = e.target.closest("[data-sec]");
   if (sg) { e.stopPropagation(); setSector(secSel === sg.dataset.sec ? "" : sg.dataset.sec); return; }
   const st = e.target.closest("[data-fav]");
@@ -476,6 +560,161 @@ function markActiveFilters() {
   $("#fToggle").classList.toggle("active", n > 0);
   $("#fToggle").textContent = `Filtreler${n ? ` (${n})` : ""} ${open ? "▴" : "▾"}`;
   $("#fClear").hidden = !filters.length;
+}
+
+/* ---------- karşılaştırma ---------- */
+const CMP_KEY = "bist-tablolar:karsilastir";
+let cmpSel = [];
+try { cmpSel = JSON.parse(localStorage.getItem(CMP_KEY) || "[]").slice(0, 3); } catch {}
+let cCharts = [];
+function saveCmp() { try { localStorage.setItem(CMP_KEY, JSON.stringify(cmpSel)); } catch {} }
+function toggleCmp(sym) {
+  if (cmpSel.includes(sym)) cmpSel = cmpSel.filter(x => x !== sym);
+  else if (cmpSel.length < 3) cmpSel.push(sym);
+  saveCmp(); paintCbar();
+  if ($("#listView").style.display !== "none") renderList();
+}
+function paintCbar() {
+  const inCompare = $("#compare").style.display === "block";
+  $("#cbar").hidden = !cmpSel.length || inCompare;
+  $("#cbarList").innerHTML = cmpSel.map(x => `<span class="pill">${esc(x)}</span>`).join("");
+  $("#cbarGo").disabled = cmpSel.length < 2;
+  $("#cbarGo").textContent = cmpSel.length < 2 ? "En az 2 hisse seç" : "Karşılaştır →";
+}
+$("#cbarGo").addEventListener("click", () => { if (cmpSel.length >= 2) location.hash = "karsilastir/" + cmpSel.join(","); });
+$("#cbarClear").addEventListener("click", () => { cmpSel = []; saveCmp(); paintCbar(); renderList(); });
+$("#dCmp").addEventListener("click", () => {
+  const sym = decodeURIComponent(location.hash.slice(1)); if (!sym) return;
+  toggleCmp(sym);
+  const inC = cmpSel.includes(sym);
+  $("#dCmp").textContent = inC ? "✓ Karşılaştırmada" : "+ Karşılaştırmaya ekle";
+  $("#dCmp").classList.toggle("on", inC);
+});
+
+const CROWS = [
+  { l: "Sektör", f: d => esc(d.sector || "—"), cmp: null },
+  { l: "Son bilanço", f: d => per(d.last_period), cmp: null },
+  { l: "Fiyat", f: d => d.price == null ? "—" : nf(2).format(d.price) + " ₺", cmp: null },
+  { l: "Piyasa değeri", f: d => money(d.market_cap), cmp: null },
+  { l: "F/K", k: "pe", f: d => mult(d.pe), cmp: "low", pos: true },
+  { l: "PD/DD", k: "pb", f: d => mult(d.pb), cmp: "low", pos: true },
+  { l: "FD/FAVÖK", k: "ev_ebitda", f: d => mult(d.ev_ebitda), cmp: "low", pos: true },
+  { l: "Net borç/FAVÖK", k: "nd_ebitda", f: d => ndx(d.nd_ebitda), cmp: "low" },
+  { l: "PEG", k: "peg", f: d => mult(d.peg), cmp: "low", pos: true },
+  { l: "Esas faaliyet marjı (12 ay)", k: "op_margin_ttm", f: d => pct(d.op_margin_ttm), cmp: "high" },
+  { l: "Net kâr marjı (12 ay)", k: "net_margin_ttm", f: d => pct(d.net_margin_ttm), cmp: "high" },
+  { l: "Esas faaliyet marjı (son çeyrek)", k: "op_margin_q", f: d => pct(d.op_margin_q), cmp: "high" },
+  { l: "Net kâr marjı (son çeyrek)", k: "net_margin_q", f: d => pct(d.net_margin_q), cmp: "high" },
+  { l: "Net kâr büyümesi (yıllık)", k: "net_growth", f: d => pct(d.net_growth), cmp: "high" },
+  { l: "Satışlar (12 ay)", f: d => money(d.revenue_ttm), cmp: null },
+  { l: "Net kâr (12 ay)", f: d => money(d.net_ttm), cmp: null },
+  { l: "Net borç", f: d => money(d.net_debt), cmp: null },
+];
+async function renderCompare(syms) {
+  let ds;
+  try { ds = await Promise.all(syms.map(getDetail)); } catch (e) { alert(e.message); location.hash = ""; return; }
+  $("#cTitle").textContent = ds.map(d => d.symbol).join(" · ");
+  $("#cMeta").textContent = ds.map(d => d.name).filter(Boolean).join(" · ");
+  $("#cTbl").innerHTML = `<thead><tr><th>Ölçüt</th>${ds.map(d => `<th class="n">${esc(d.symbol)}<small>${esc(d.sector || "")}</small></th>`).join("")}</tr></thead><tbody>` +
+    CROWS.map(r => {
+      let best = null;
+      if (r.cmp) {
+        const vals = ds.map(d => d[r.k]).map(v => (v == null || (r.pos && v < 0)) ? null : v);
+        const ok = vals.filter(v => v != null);
+        if (ok.length >= 2) best = r.cmp === "low" ? Math.min(...ok) : Math.max(...ok);
+        return `<tr><td>${r.l}</td>${ds.map((d, i) => `<td class="n${best != null && vals[i] === best ? " best" : ""}">${r.f(d)}</td>`).join("")}</tr>`;
+      }
+      return `<tr><td>${r.l}</td>${ds.map(d => `<td class="n">${r.f(d)}</td>`).join("")}</tr>`;
+    }).join("") + "</tbody>";
+
+  cCharts.forEach(c => c.destroy()); cCharts = [];
+  if (typeof Chart === "undefined") {
+    ["#cOp", "#cNet"].forEach(id => { const c = $(id); if (c) c.parentElement.innerHTML = "<p class='dim'>Grafik kütüphanesi yüklenemedi.</p>"; });
+    return;
+  }
+  const css = getComputedStyle(document.documentElement);
+  const cols = ["--s1", "--s2", "--s3"].map(v => css.getPropertyValue(v).trim());
+  const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
+  const periods = [...new Set(ds.flatMap(d => d.quarters.map(q => q.period)))].sort();
+  const mk = (canvas, key) => new Chart(canvas, {
+    type: "line",
+    data: { labels: periods.map(per), datasets: ds.map((d, i) => {
+      const m = Object.fromEntries(d.quarters.map(q => [q.period, q[key]]));
+      return { label: d.symbol, data: periods.map(p => m[p] == null ? null : m[p] * 100), borderColor: cols[i], backgroundColor: cols[i], borderWidth: 2, pointRadius: 3, tension: .25, spanGaps: true };
+    }) },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend: { labels: { color: muted, boxWidth: 12 } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y == null ? "—" : "%" + nf(1).format(c.parsed.y)}` } } },
+      scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => "%" + v } } }
+    }
+  });
+  cCharts = [mk($("#cOp"), "op_margin"), mk($("#cNet"), "net_margin")];
+}
+
+/* ---------- sektörle kıyas ---------- */
+const REL = [
+  { k: "pe", l: "F/K", fmt: v => nf(1).format(v), pos: true, low: true },
+  { k: "pb", l: "PD/DD", fmt: v => nf(2).format(v), pos: true, low: true },
+  { k: "ev_ebitda", l: "FD/FAVÖK", fmt: v => nf(1).format(v), pos: true, low: true },
+  { k: "nd_ebitda", l: "Net borç/FAVÖK", fmt: v => v < 0 ? "net nakit" : nf(2).format(v), low: true, abs: true },
+  { k: "op_margin_ttm", l: "Esas faal. marjı", fmt: v => "%" + nf(1).format(v * 100), margin: true },
+  { k: "net_margin_ttm", l: "Net kâr marjı", fmt: v => "%" + nf(1).format(v * 100), margin: true },
+];
+function median(a) { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; }
+function quant(b, q) { const i = (b.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return b[lo] + (b[hi] - b[lo]) * (i - lo); }
+function renderRelative(d) {
+  const box = $("#rel");
+  let sec = d.sector, wide = false;
+  let peers = sec ? state.stocks.filter(s => s.sector === sec) : [];
+  if (peers.length < 5 && d.sector_main) {   // az şirketli sektörde ana sektöre geniş
+    const wider = state.stocks.filter(s => s.sector_main === d.sector_main);
+    if (wider.length > peers.length) { peers = wider; sec = d.sector_main; wide = true; }
+  }
+  $("#relR").textContent = sec ? `${sec}${wide ? " (ana sektör)" : ""} · ${peers.length} şirket` : "";
+  if (!sec || peers.length < 3) {
+    box.innerHTML = `<p class="rtxt" style="padding:12px 0">${sec ? `“${esc(sec)}” sektöründe kıyas için yeterli şirket yok (en az 3 gerekir).` : "Bu hissenin sektör bilgisi yok."}</p>`;
+    return;
+  }
+  const valid = (m, v) => v != null && isFinite(v) && !(m.pos && v < 0);
+  const rows = REL.map(m => {
+    const me = d[m.k];
+    const vals = peers.map(s => s[m.k]).filter(v => valid(m, v));
+    const all = state.stocks.map(s => s[m.k]).filter(v => valid(m, v));
+    if (vals.length < 3) return `<div class="rrow"><div class="rk">${m.l}</div><div class="rv">—</div><div class="rtxt" style="grid-column:span 2">Sektörde yeterli veri yok.</div></div>`;
+    const med = median(vals), bist = median(all);
+    const sorted = [...vals].sort((a, b) => a - b);
+    const lo = quant(sorted, .05), hi = quant(sorted, .95);
+    const span = hi - lo || 1;
+    const x = v => Math.max(0, Math.min(100, (v - lo) / span * 100));
+    const dots = sorted.map(v => `<span class="dot" style="left:${x(v)}%"></span>`).join("");
+    let txt = "", meDot = "";
+    if (valid(m, me)) {
+      meDot = `<span class="me" style="left:${x(me)}%" title="${esc(d.symbol)}: ${m.fmt(me)}"></span>`;
+      const better = m.low ? sorted.filter(v => v < me).length : sorted.filter(v => v > me).length;
+      const rank = better + 1;
+      if (m.margin) {
+        const diff = (me - med) * 100;
+        txt = `<b class="${diff >= 0 ? "good" : "bad"}">${diff >= 0 ? "+" : "−"}${nf(1).format(Math.abs(diff))} puan</b> sektör medyanına göre · ${sorted.length} şirket içinde ${rank}. en yüksek`;
+      } else if (m.abs) {
+        txt = me < 0 ? `<b class="good">Net nakit</b> · sektör medyanı ${m.fmt(med)} · ${sorted.length} şirket içinde ${rank}. en az borçlu`
+                     : `Sektör medyanı ${m.fmt(med)} · <b class="${me <= med ? "good" : "bad"}">${me <= med ? "sektörden az borçlu" : "sektörden borçlu"}</b> · ${sorted.length} şirket içinde ${rank}. en az borçlu`;
+      } else {
+        const prem = (me / med - 1) * 100;
+        txt = `<b class="${prem <= 0 ? "good" : "bad"}">%${nf(0).format(Math.abs(prem))} ${prem <= 0 ? "iskontolu" : "primli"}</b> (sektöre göre) · ${sorted.length} şirket içinde ${rank}. en ucuz`;
+      }
+    } else {
+      txt = m.pos ? "Hisse için anlamlı değil (zarar, negatif özkaynak ya da FAVÖK)." : "Veri yok.";
+    }
+    txt += ` · BIST medyanı ${m.fmt(bist)}`;
+    return `<div class="rrow">
+      <div class="rk">${m.l}<div class="rtxt" style="text-transform:none;letter-spacing:0;font-weight:400;margin-top:3px">sektör medyanı <b>${m.fmt(med)}</b></div></div>
+      <div class="rv${valid(m, me) ? "" : " dim"}">${valid(m, me) ? m.fmt(me) : "—"}</div>
+      <div class="strip"><span class="lo">${m.fmt(lo)}</span><span class="hi">${m.fmt(hi)}</span>${dots}<span class="med" style="left:${x(med)}%" title="Sektör medyanı ${m.fmt(med)}"></span>${meDot}</div>
+      <div class="rtxt">${txt}</div>
+    </div>`;
+  }).join("");
+  box.innerHTML = rows + `<div class="rlegend"><span><i class="a"></i>${esc(d.symbol)}</span><span><i class="b"></i>sektör medyanı</span><span><i class="c"></i>sektördeki diğer şirketler (uç %5'ler kesildi)</span>${wide ? `<span>“${esc(d.sector)}” sektöründe az şirket olduğu için ana sektör “${esc(sec)}” ile kıyaslandı.</span>` : ""}</div>`;
 }
 
 /* ---------- sektör ---------- */
