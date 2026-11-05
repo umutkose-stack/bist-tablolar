@@ -277,7 +277,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
 
 <script>
 const $ = s => document.querySelector(s);
-const state = { stocks: [], demo: false, sort: { k: "market_cap", dir: -1 }, basis: "ttm", detailCache: {} };
+const state = { stocks: [], demo: false, sort: { k: "symbol", dir: 1 }, basis: "ttm", detailCache: {} };
 let chart;
 
 /* ---------- favoriler (bu tarayıcıda saklanır) ---------- */
@@ -360,6 +360,7 @@ function renderList() {
     let x = val(a, k), y = val(b, k);
     if (x == null) return 1; if (y == null) return -1;
     if (k === "pe" || k === "pb" || k === "ev_ebitda") { if (x < 0) return 1; if (y < 0) return -1; }
+    if (typeof x === "string") return x.localeCompare(y, "tr") * dir;
     return (x > y ? 1 : x < y ? -1 : 0) * dir;
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
