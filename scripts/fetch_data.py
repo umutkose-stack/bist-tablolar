@@ -208,12 +208,20 @@ def process(symbol: str, name: str = "") -> dict | None:
         pass
     mcap = clean(metrics.get("market_cap"))
     price = None
-    try:  # fiyat yavaş bir kaynaktan geliyor; takılırsa beklemeden geç
-        ex = ThreadPoolExecutor(1)
-        price = clean(ex.submit(lambda: t.fast_info["last_price"]).result(timeout=PRICE_TIMEOUT))
-        ex.shutdown(wait=False)
-    except (FutTimeout, Exception):  # noqa: BLE001
+    try:  # önce İş Yatırım'ın hızlı fiyat servisi
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            price = clean(t._get_isyatirim().get_realtime_quote(symbol).get("last")) or None  # noqa: SLF001
+    except Exception:  # noqa: BLE001
         pass
+    if price is None:
+        try:  # yedek: TradingView (yavaş olabilir; takılırsa beklemeden geç)
+            ex = ThreadPoolExecutor(1)
+            price = clean(ex.submit(lambda: t.fast_info["last_price"]).result(timeout=PRICE_TIMEOUT))
+            ex.shutdown(wait=False)
+        except (FutTimeout, Exception):  # noqa: BLE001
+            pass
 
     # Kendi hesabımız (kaynak oranı yoksa yedek)
     pe_calc = ratio(mcap, net_ttm) if net_ttm and net_ttm > 0 else None
