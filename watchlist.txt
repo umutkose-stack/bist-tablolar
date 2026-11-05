@@ -1,0 +1,6 @@
+# Takip etmek istediğin hisseleri satır satır yaz.
+# Dosya boşsa (sadece yorum satırları varsa) BIST 100'ün tamamı çekilir.
+# Örnek:
+# THYAO
+# ASELS
+# BIMAS

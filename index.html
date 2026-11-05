@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BIST Tablolar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f6f5f1; --panel:#ffffff; --ink:#1c1d1f; --muted:#6b6e73; --line:#e3e1db;
+  --accent:#1f5f8b; --pos:#1d7a4a; --neg:#b23a32; --chip:#eef2f5; --warn-bg:#fff6dc; --warn:#7a5a00;
+  --s1:#1f5f8b; --s2:#d07a2d;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --panel:#1a1d21; --ink:#e7e8ea; --muted:#9097a0; --line:#2a2f35;
+    --accent:#6fb0de; --pos:#5cc48a; --neg:#ec7a70; --chip:#232830; --warn-bg:#2e2712; --warn:#e8c46a;
+    --s1:#6fb0de; --s2:#eda262;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --panel:#1a1d21; --ink:#e7e8ea; --muted:#9097a0; --line:#2a2f35;
+  --accent:#6fb0de; --pos:#5cc48a; --neg:#ec7a70; --chip:#232830; --warn-bg:#2e2712; --warn:#e8c46a;
+  --s1:#6fb0de; --s2:#eda262;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "IBM Plex Sans",system-ui,sans-serif}
+.num,td.n,th.n{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:22px;margin:0;font-weight:600;letter-spacing:-.01em}
+h1 span{color:var(--accent)}
+.meta{color:var(--muted);font-size:13px}
+.banner{background:var(--warn-bg);color:var(--warn);padding:10px 14px;border-radius:8px;font-size:14px;margin-bottom:16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;padding:14px;border-bottom:1px solid var(--line);align-items:end}
+.controls label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:4px}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
+input[type=number]{width:96px}
+#q{width:200px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--muted);padding:7px 11px;cursor:pointer}
+.seg button.on{background:var(--accent);color:#fff}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:9px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:12px;font-weight:500;color:var(--muted);position:sticky;top:0;background:var(--panel);cursor:pointer;user-select:none}
+th.n,td.n{text-align:right}
+th.sorted{color:var(--ink)}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--chip)}
+.sym{font-weight:600}
+.nm{color:var(--muted);font-size:12px;max-width:220px;overflow:hidden;text-overflow:ellipsis;display:block}
+.pos{color:var(--pos)} .neg{color:var(--neg)} .dim{color:var(--muted)}
+.tag{font-size:11px;background:var(--chip);color:var(--muted);padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:400}
+.count{padding:10px 14px;color:var(--muted);font-size:13px}
+/* detay */
+#detail{display:none}
+.back{font:inherit;background:none;border:0;color:var(--accent);cursor:pointer;padding:0;margin-bottom:12px}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.dhead h2{margin:0;font-size:24px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.tile{padding:14px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-size:24px;font-weight:500;margin-top:4px}
+.tile .s{font-size:12px;color:var(--muted);margin-top:2px}
+.chartbox{padding:14px;margin-bottom:14px}
+.chartbox h3,.sec h3{margin:0 0 10px;font-size:14px;font-weight:600}
+.cw{position:relative;height:260px}
+.sec{padding:14px;margin-bottom:14px}
+.tabs{display:inline-flex;margin-bottom:10px}
+.full td:first-child{white-space:normal;min-width:240px}
+.full tr{cursor:default}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+@media (max-width:720px){
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  #q{width:100%}
+  .controls label{flex:1 1 40%}
+  input[type=number]{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>BIST <span>Tablolar</span></h1>
+    <div class="meta" id="updated"></div>
+  </header>
+  <div class="banner" id="demoBanner" hidden>
+    Örnek veri gösteriliyor (uydurma hisseler). Gerçek veriler, GitHub Actions ilk kez çalışıp <code>data/</code> klasörünü doldurduğunda burada görünür.
+  </div>
+
+  <!-- TARAMA -->
+  <section id="list" class="panel">
+    <div class="controls">
+      <label>Ara<input id="q" placeholder="Kod veya şirket adı"></label>
+      <label>F/K en çok<input type="number" id="fPe" step="0.5" placeholder="—"></label>
+      <label>PD/DD en çok<input type="number" id="fPb" step="0.1" placeholder="—"></label>
+      <label>Esas faal. marjı ≥ %<input type="number" id="fOp" step="1" placeholder="—"></label>
+      <label>Net marj ≥ %<input type="number" id="fNet" step="1" placeholder="—"></label>
+      <label>Marj dönemi
+        <span class="seg" id="basis"><button data-v="ttm" class="on">Son 12 ay</button><button data-v="q">Son çeyrek</button></span>
+      </label>
+    </div>
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr>
+          <th data-k="symbol">Hisse</th>
+          <th data-k="price" class="n">Fiyat</th>
+          <th data-k="market_cap" class="n">Piy. Değeri</th>
+          <th data-k="pe" class="n">F/K</th>
+          <th data-k="pb" class="n">PD/DD</th>
+          <th data-k="op" class="n">Esas Faal. Marjı</th>
+          <th data-k="net" class="n">Net Kâr Marjı</th>
+          <th data-k="last_period" class="n">Son Dönem</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="count" id="count"></div>
+  </section>
+
+  <!-- DETAY -->
+  <section id="detail">
+    <button class="back" onclick="location.hash=''">← Tüm hisseler</button>
+    <div class="dhead"><div><h2 id="dSym"></h2><div class="meta" id="dName"></div></div><div class="meta num" id="dPrice"></div></div>
+    <div class="tiles" id="tiles"></div>
+    <div class="panel chartbox"><h3>Çeyreklik marjlar</h3><div class="cw"><canvas id="mChart"></canvas></div></div>
+    <div class="panel sec">
+      <h3>Çeyreklik özet</h3>
+      <div class="tablewrap"><table id="qTbl"></table></div>
+      <div class="note" id="qNote"></div>
+    </div>
+    <div class="panel sec">
+      <div class="tabs seg" id="fullTabs"><button data-v="income_statement" class="on">Gelir tablosu</button><button data-v="balance_sheet">Bilanço</button></div>
+      <div class="tablewrap"><table class="full" id="fullTbl"></table></div>
+      <div class="note">Gelir tablosu kaynakta yıl başından itibaren kümülatif verilir (3A, 6A, 9A, 12A).</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const state = { stocks: [], demo: false, sort: { k: "market_cap", dir: -1 }, basis: "ttm", detailCache: {} };
+let chart;
+
+/* ---------- biçimlendirme ---------- */
+const nf = (d) => new Intl.NumberFormat("tr-TR", { minimumFractionDigits: d, maximumFractionDigits: d });
+function money(v) {
+  if (v == null) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e9) return nf(1).format(v / 1e9) + " mlr";
+  if (a >= 1e6) return nf(1).format(v / 1e6) + " mn";
+  if (a >= 1e3) return nf(0).format(v / 1e3) + " bin";
+  return nf(0).format(v);
+}
+const mult = v => v == null ? "—" : (v < 0 ? "a.d." : nf(2).format(v));
+const pct = v => v == null ? "—" : "%" + nf(1).format(v * 100);
+const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
+const per = p => p ? p.replace(/(\d{4})Q(\d)/, (_, y, q) => `${y}/${q * 3}`) : "—";
+
+/* ---------- veri ---------- */
+async function load() {
+  try {
+    const r = await fetch("data/summary.json", { cache: "no-store" });
+    if (!r.ok) throw 0;
+    const d = await r.json();
+    state.stocks = d.stocks; state.demo = !!d.demo;
+    $("#updated").textContent = "Güncelleme: " + new Date(d.updated_at).toLocaleString("tr-TR", { dateStyle: "medium", timeStyle: "short" });
+  } catch {
+    const d = makeDemo();
+    state.stocks = d.stocks; state.demo = true; state.detailCache = d.details;
+    $("#updated").textContent = "Örnek veri";
+  }
+  $("#demoBanner").hidden = !state.demo;
+  route();
+}
+
+async function getDetail(sym) {
+  if (state.detailCache[sym]) return state.detailCache[sym];
+  const r = await fetch(`data/stocks/${sym}.json`, { cache: "no-store" });
+  if (!r.ok) throw new Error("Detay bulunamadı");
+  return (state.detailCache[sym] = await r.json());
+}
+
+/* ---------- tarama tablosu ---------- */
+function val(s, k) {
+  if (k === "op") return state.basis === "ttm" ? s.op_margin_ttm : s.op_margin_q;
+  if (k === "net") return state.basis === "ttm" ? s.net_margin_ttm : s.net_margin_q;
+  return s[k];
+}
+function renderList() {
+  const q = $("#q").value.trim().toLocaleUpperCase("tr-TR");
+  const num = id => { const v = parseFloat($(id).value); return isNaN(v) ? null : v; };
+  const pe = num("#fPe"), pb = num("#fPb"), op = num("#fOp"), net = num("#fNet");
+  let rows = state.stocks.filter(s => {
+    if (q && !s.symbol.includes(q) && !(s.name || "").toLocaleUpperCase("tr-TR").includes(q)) return false;
+    if (pe != null && (s.pe == null || s.pe < 0 || s.pe > pe)) return false;
+    if (pb != null && (s.pb == null || s.pb < 0 || s.pb > pb)) return false;
+    if (op != null && (val(s, "op") == null || val(s, "op") * 100 < op)) return false;
+    if (net != null && (val(s, "net") == null || val(s, "net") * 100 < net)) return false;
+    return true;
+  });
+  const { k, dir } = state.sort;
+  rows.sort((a, b) => {
+    let x = val(a, k), y = val(b, k);
+    if (x == null) return 1; if (y == null) return -1;
+    if (k === "pe" || k === "pb") { if (x < 0) return 1; if (y < 0) return -1; }
+    return (x > y ? 1 : x < y ? -1 : 0) * dir;
+  });
+  $("#tbl tbody").innerHTML = rows.map(s => `
+    <tr data-s="${s.symbol}">
+      <td><span class="sym">${s.symbol}</span>${s.group === "banka" ? '<span class="tag">banka</span>' : ""}<span class="nm">${s.name || ""}</span></td>
+      <td class="n">${s.price == null ? "—" : nf(2).format(s.price)}</td>
+      <td class="n">${money(s.market_cap)}</td>
+      <td class="n">${mult(s.pe)}</td>
+      <td class="n">${mult(s.pb)}</td>
+      <td class="n ${sign(val(s, "op"))}">${pct(val(s, "op"))}</td>
+      <td class="n ${sign(val(s, "net"))}">${pct(val(s, "net"))}</td>
+      <td class="n dim">${per(s.last_period)}</td>
+    </tr>`).join("");
+  document.querySelectorAll("#tbl th").forEach(th => th.classList.toggle("sorted", th.dataset.k === k));
+  $("#count").textContent = `${rows.length} / ${state.stocks.length} hisse · F/K ve PD/DD'de "a.d." = zarar veya negatif özkaynak`;
+}
+
+/* ---------- detay ---------- */
+async function renderDetail(sym) {
+  let d;
+  try { d = await getDetail(sym); } catch (e) { alert(e.message); location.hash = ""; return; }
+  $("#dSym").textContent = d.symbol;
+  $("#dName").textContent = (d.name || "") + (d.group === "banka" ? " · banka formatı" : "");
+  $("#dPrice").textContent = (d.price != null ? nf(2).format(d.price) + " ₺ · " : "") + "Piy. değ. " + money(d.market_cap);
+  const tile = (k, v, s, cls = "") => `<div class="panel tile"><div class="k">${k}</div><div class="v num ${cls}">${v}</div><div class="s">${s}</div></div>`;
+  $("#tiles").innerHTML =
+    tile("F/K", mult(d.pe), "Net kâr: " + money(d.net_ttm) + " (12 ay)") +
+    tile("PD/DD", mult(d.pb), "FD/FAVÖK: " + mult(d.ev_ebitda)) +
+    tile("Esas faaliyet marjı", pct(d.op_margin_ttm), "Son çeyrek: " + pct(d.op_margin_q), sign(d.op_margin_ttm)) +
+    tile("Net kâr marjı", pct(d.net_margin_ttm), "Son çeyrek: " + pct(d.net_margin_q), sign(d.net_margin_ttm));
+
+  const qs = [...d.quarters].reverse();
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue("--s1").trim(), c2 = css.getPropertyValue("--s2").trim();
+  const grid = css.getPropertyValue("--line").trim(), muted = css.getPropertyValue("--muted").trim();
+  if (chart) chart.destroy();
+  if (typeof Chart === "undefined") { $("#mChart").parentElement.innerHTML = "<p class='dim'>Grafik kütüphanesi yüklenemedi.</p>"; }
+  else chart = new Chart($("#mChart"), {
+    type: "line",
+    data: {
+      labels: qs.map(q => per(q.period)),
+      datasets: [
+        { label: "Esas faaliyet marjı", data: qs.map(q => q.op_margin == null ? null : q.op_margin * 100), borderColor: c1, backgroundColor: c1, tension: .25, spanGaps: true },
+        { label: "Net kâr marjı", data: qs.map(q => q.net_margin == null ? null : q.net_margin * 100), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: true }
+      ]
+    },
+    options: {
+      maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+      plugins: { legend: { labels: { color: muted, boxWidth: 12 } },
+        tooltip: { callbacks: { label: c => `${c.dataset.label}: %${nf(1).format(c.parsed.y)}` } } },
+      scales: { x: { grid: { display: false }, ticks: { color: muted } },
+        y: { grid: { color: grid }, ticks: { color: muted, callback: v => "%" + v } } }
+    }
+  });
+
+  $("#qTbl").innerHTML = `<thead><tr><th>Dönem</th><th class="n">Satışlar</th><th class="n">Brüt kâr</th><th class="n">Esas faal. kârı</th><th class="n">Net kâr</th><th class="n">Esas faal. marjı</th><th class="n">Net marj</th><th class="n">Özkaynak</th></tr></thead><tbody>` +
+    d.quarters.map(q => `<tr><td>${per(q.period)}</td><td class="n">${money(q.revenue)}</td><td class="n">${money(q.gross)}</td><td class="n ${sign(q.operating)}">${money(q.operating)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.op_margin)}">${pct(q.op_margin)}</td><td class="n ${sign(q.net_margin)}">${pct(q.net_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
+  $("#qNote").textContent = "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır.";
+
+  renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
+}
+function renderFull(d, key) {
+  const t = d[key];
+  if (!t) { $("#fullTbl").innerHTML = "<tr><td class='dim'>Veri yok</td></tr>"; return; }
+  $("#fullTbl").innerHTML = `<thead><tr><th>Kalem</th>${t.columns.map(c => `<th class="n">${per(c)}</th>`).join("")}</tr></thead><tbody>` +
+    t.rows.map(r => `<tr><td>${r[0]}</td>${r.slice(1).map(v => `<td class="n">${money(v)}</td>`).join("")}</tr>`).join("") + "</tbody>";
+}
+
+/* ---------- yönlendirme ve olaylar ---------- */
+function route() {
+  const sym = decodeURIComponent(location.hash.slice(1));
+  $("#list").style.display = sym ? "none" : "";
+  $("#detail").style.display = sym ? "block" : "none";
+  if (sym) { renderDetail(sym); window.scrollTo(0, 0); } else renderList();
+}
+window.addEventListener("hashchange", route);
+["#q", "#fPe", "#fPb", "#fOp", "#fNet"].forEach(id => $(id).addEventListener("input", renderList));
+$("#tbl thead").addEventListener("click", e => {
+  const k = e.target.closest("th")?.dataset.k; if (!k) return;
+  state.sort = { k, dir: state.sort.k === k ? -state.sort.dir : (k === "symbol" || k === "pe" || k === "pb" ? 1 : -1) };
+  renderList();
+});
+$("#tbl tbody").addEventListener("click", e => { const tr = e.target.closest("tr"); if (tr) location.hash = tr.dataset.s; });
+$("#basis").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  state.basis = b.dataset.v;
+  $("#basis").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  renderList();
+});
+$("#fullTabs").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  $("#fullTabs").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  renderFull(await getDetail(decodeURIComponent(location.hash.slice(1))), b.dataset.v);
+});
+
+/* ---------- örnek veri (sadece data/ yokken) ---------- */
+function makeDemo() {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const defs = [["ORNEK1","Örnek Havacılık A.Ş.","sanayi"],["ORNEK2","Örnek Gıda A.Ş.","sanayi"],["ORNEK3","Örnek Enerji A.Ş.","sanayi"],["ORNEK4","Örnek Bankası A.Ş.","banka"],["ORNEK5","Örnek Savunma A.Ş.","sanayi"],["ORNEK6","Örnek Tekstil A.Ş.","sanayi"]];
+  const stocks = [], details = {};
+  for (const [sym, name, group] of defs) {
+    const base = 2e9 + rnd() * 3e10, opM = rnd() * .25 - .03, netM = opM * (.5 + rnd() * .6);
+    const quarters = [];
+    for (let i = 0; i < 12; i++) {
+      const y = 2026 - Math.floor((i + 2) / 4), q = 4 - ((i + 2) % 4);
+      const rev = base * (1 - i * .05) * (.9 + rnd() * .2), om = opM + (rnd() - .5) * .06, nm = netM + (rnd() - .5) * .06;
+      quarters.push({ period: `${y}Q${q}`, revenue: rev, gross: rev * (om + .12), operating: rev * om, net: rev * nm, equity: base * 3 * (1 - i * .04), op_margin: om, net_margin: nm });
+    }
+    const t4 = quarters.slice(0, 4), sum = k => t4.reduce((a, q) => a + q[k], 0);
+    const mcap = base * (2 + rnd() * 6), netT = sum("net");
+    const s = { symbol: sym, name, group, last_period: quarters[0].period, price: 10 + rnd() * 300, market_cap: mcap,
+      pe: netT > 0 ? mcap / netT : -1, pb: mcap / quarters[0].equity, ev_ebitda: 3 + rnd() * 10,
+      revenue_ttm: sum("revenue"), operating_ttm: sum("operating"), net_ttm: netT,
+      op_margin_ttm: sum("operating") / sum("revenue"), net_margin_ttm: netT / sum("revenue"),
+      op_margin_q: quarters[0].op_margin, net_margin_q: quarters[0].net_margin };
+    stocks.push(s);
+    const cols = quarters.map(q => q.period);
+    details[sym] = { ...s, quarters,
+      income_statement: { columns: cols, rows: [["Satış Gelirleri", ...quarters.map(q => q.revenue)], ["BRÜT KAR (ZARAR)", ...quarters.map(q => q.gross)], ["FAALİYET KARI (ZARARI)", ...quarters.map(q => q.operating)], ["Ana Ortaklık Payları", ...quarters.map(q => q.net)]] },
+      balance_sheet: { columns: cols, rows: [["Ana Ortaklığa Ait Özkaynaklar", ...quarters.map(q => q.equity)]] } };
+  }
+  return { stocks, details };
+}
+
+load();
+</script>
+</body>
+</html>
