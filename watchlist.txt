@@ -1,6 +1,4 @@
-# Takip etmek istediğin hisseleri satır satır yaz.
-# Dosya boşsa (sadece yorum satırları varsa) BIST 100'ün tamamı çekilir.
+# Site varsayılan olarak Borsa İstanbul'daki TÜM hisseleri (BIST Tüm endeksi) çeker.
+# Endekste olmayan ama görmek istediğin bir hisse varsa kodunu buraya satır satır yaz.
 # Örnek:
-# THYAO
-# ASELS
-# BIMAS
+# ABCDE

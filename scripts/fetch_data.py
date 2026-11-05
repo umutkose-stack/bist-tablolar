@@ -32,7 +32,7 @@ STOCKS = DATA / "stocks"
 WATCHLIST = ROOT / "watchlist.txt"
 
 QUARTERS = 12          # kaç çeyrek geriye gidilsin
-WORKERS = 6            # aynı anda işlenen hisse sayısı (çok artırma: kaynak engelleyebilir)
+WORKERS = 8            # aynı anda işlenen hisse sayısı (çok artırma: kaynak engelleyebilir)
 PRICE_TIMEOUT = 8      # fiyat sorgusu en fazla kaç sn beklesin
 
 # İş Yatırım çeyreklik gelir tablosu değerleri yıl başından itibaren KÜMÜLATİF gelir.
@@ -374,16 +374,28 @@ def process(symbol: str, name: str = "") -> dict | None:
 
 # ------------------------------------------------------------------ ana akış
 
+INDEXES = ["XUTUM", "XU100"]   # sırayla dene: BIST Tüm, olmazsa BIST 100
+
+
 def symbol_list(argv: list[str]) -> list[tuple[str, str]]:
+    """Komut satırı verilirse sadece onlar; yoksa BIST Tüm + watchlist.txt'deki ekler."""
     if argv:
         return [(s.upper(), "") for s in argv]
+    out: dict[str, str] = {}
+    for idx in INDEXES:
+        try:
+            comps = bp.index(idx).components
+            if comps:
+                out = {c["symbol"]: c.get("name", "") for c in comps}
+                print(f"Endeks: {idx} ({len(out)} hisse)", flush=True)
+                break
+        except Exception as e:  # noqa: BLE001
+            print(f"Endeks {idx} alınamadı: {e}", flush=True)
     if WATCHLIST.exists():
-        syms = [l.split("#")[0].strip().upper() for l in WATCHLIST.read_text(encoding="utf-8").splitlines()]
-        syms = [s for s in syms if s]
-        if syms:
-            return [(s, "") for s in syms]
-    comps = bp.index("XU100").components
-    return [(c["symbol"], c.get("name", "")) for c in comps]
+        extra = [l.split("#")[0].strip().upper() for l in WATCHLIST.read_text(encoding="utf-8").splitlines()]
+        for sym in filter(None, extra):
+            out.setdefault(sym, "")
+    return list(out.items())
 
 
 def main():
