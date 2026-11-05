@@ -154,8 +154,9 @@ def company_metrics(prov, symbol: str) -> dict:
         return out
     out["sector"] = None
     if os.environ.get("DEBUG_HTML"):
-        j = html.find("Sektör")
-        print(f"--- {symbol} HTML (Sektör @ {j}) ---\n{html[max(0, j-300):j+600] if j >= 0 else '(yok)'}\n---", flush=True)
+        for mm in list(re.finditer(r"Sekt[öo]r|Faaliyet Alan", html))[:14]:
+            j = mm.start()
+            print(f"--- {symbol} @{j}: " + re.sub(r"\s+", " ", html[max(0, j-120):j+260]), flush=True)
     m = re.search(r"Sekt[öo]r[^<]{0,20}</t[hd]>\s*<td[^>]*>\s*(?:<a[^>]*>)?\s*([^<]+?)\s*<", html)
     if m:
         out["sector"] = m.group(1).strip()
