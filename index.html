@@ -115,8 +115,11 @@ tbody tr:hover{background:var(--hover)}
 tbody tr:last-child td{border-bottom:0}
 .sym{font-weight:600;letter-spacing:.01em}
 .per{font-size:11px;color:var(--muted);margin-left:6px;font-family:var(--mono)}
-.nm{color:var(--muted);font-size:12px;max-width:170px;overflow:hidden;text-overflow:ellipsis;display:block}
+.nm{color:var(--muted);font-size:12px;max-width:230px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;display:block}
 .pos{color:var(--pos)} .neg{color:var(--neg)} .dim{color:var(--muted)}
+.stag{font:500 10.5px/1.2 var(--sans);letter-spacing:.02em;color:var(--accent);border:1px solid currentColor;border-radius:4px;padding:1px 5px;margin-right:6px;background:transparent;cursor:pointer;vertical-align:1px}
+.stag:hover{background:var(--hover)}
+#fSec{min-width:190px;max-width:240px}
 .tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--rule);color:var(--muted);padding:1px 5px;border-radius:4px;margin-left:6px;font-weight:500}
 .count{padding:12px 16px;color:var(--muted);font-size:12px;border-top:1px solid var(--ink)}
 .star{font:inherit;background:none;border:0;cursor:pointer;padding:2px 6px 2px 0;font-size:17px;line-height:1;color:var(--muted);vertical-align:-2px}
@@ -208,6 +211,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
         <span class="seg" id="view"><button data-v="all" class="on">Tümü</button><button data-v="fav">★ Favoriler <span id="favN"></span></button></span>
       </label>
       <label>Ara<input id="q" placeholder="Kod veya şirket adı"></label>
+      <label>Sektör<select id="fSec"><option value="">Tüm sektörler</option></select></label>
       <button class="fbtn" id="fToggle" type="button">Filtreler ▾</button>
       <div class="more" id="more">
         <div class="fhead">
@@ -319,6 +323,7 @@ async function load() {
     $("#updated").textContent = "Örnek veri";
   }
   $("#demoBanner").hidden = !state.demo;
+  fillSectors();
   route();
 }
 
@@ -343,6 +348,7 @@ function renderList() {
   $("#view").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.v === view));
   let rows = state.stocks.filter(s => {
     if (view === "fav" && !favs.has(s.symbol)) return false;
+    if (secSel && s.sector !== secSel) return false;
     if (q && !s.symbol.includes(q) && !(s.name || "").toLocaleUpperCase("tr-TR").includes(q)) return false;
     for (const f of active) {
       const m = METRIC[f.k]; if (!m) continue;
@@ -365,7 +371,7 @@ function renderList() {
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
-      <td class="first"><div class="fc"><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span>${s.group === "banka" ? '<span class="tag">banka</span>' : ""}<span class="nm">${s.name || ""}</span></div></div></td>
+      <td class="first"><div class="fc"><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
       <td class="n c-price">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${mult(s.pe)}</td>
@@ -391,7 +397,7 @@ async function renderDetail(sym) {
   $("#dName").textContent = (d.name || "") + (d.group === "banka" ? " · banka formatı" : "");
   $("#dPrice").textContent = (d.price != null ? nf(2).format(d.price) + " ₺ · " : "") + "Piy. değ. " + money(d.market_cap);
   const tile = (k, v, s, cls = "") => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
-  $("#dEyebrow").textContent = d.group === "banka" ? "Banka · son dönem " + per(d.last_period) : "Son bilanço · " + per(d.last_period);
+  $("#dEyebrow").textContent = [d.sector || (d.group === "banka" ? "Banka" : null), d.sector_main && d.sector_main !== d.sector ? d.sector_main : null, "son bilanço " + per(d.last_period)].filter(Boolean).join(" · ");
   $("#band").innerHTML =
     tile("F/K", mult(d.pe), "Net kâr: " + money(d.net_ttm) + " (12 ay)") +
     tile("PD/DD", mult(d.pb), "Özkaynak: " + money(d.quarters?.[0]?.equity)) +
@@ -457,6 +463,8 @@ $("#tbl thead").addEventListener("click", e => {
   renderList();
 });
 $("#tbl tbody").addEventListener("click", e => {
+  const sg = e.target.closest("[data-sec]");
+  if (sg) { e.stopPropagation(); setSector(secSel === sg.dataset.sec ? "" : sg.dataset.sec); return; }
   const st = e.target.closest("[data-fav]");
   if (st) { e.stopPropagation(); toggleFav(st.dataset.fav); renderList(); return; }
   const tr = e.target.closest("tr[data-s]"); if (tr) location.hash = tr.dataset.s;
@@ -469,6 +477,25 @@ function markActiveFilters() {
   $("#fToggle").textContent = `Filtreler${n ? ` (${n})` : ""} ${open ? "▴" : "▾"}`;
   $("#fClear").hidden = !filters.length;
 }
+
+/* ---------- sektör ---------- */
+const SEC_KEY = "bist-tablolar:sektor";
+let secSel = "";
+try { secSel = localStorage.getItem(SEC_KEY) || ""; } catch {}
+function fillSectors() {
+  const cnt = {};
+  state.stocks.forEach(s => { if (s.sector) cnt[s.sector] = (cnt[s.sector] || 0) + 1; });
+  const names = Object.keys(cnt).sort((a, b) => a.localeCompare(b, "tr"));
+  if (secSel && !cnt[secSel]) secSel = "";
+  $("#fSec").innerHTML = `<option value="">Tüm sektörler</option>` +
+    names.map(n => `<option value="${esc(n)}"${n === secSel ? " selected" : ""}>${esc(n)} (${cnt[n]})</option>`).join("");
+  $("#fSec").closest("label").hidden = !names.length;
+}
+function setSector(v) {
+  secSel = v; try { localStorage.setItem(SEC_KEY, v); } catch {}
+  $("#fSec").value = v; renderList();
+}
+$("#fSec").addEventListener("change", e => setSector(e.target.value));
 
 /* ---------- çoklu kriter ---------- */
 const METRICS = [
