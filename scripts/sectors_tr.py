@@ -32,7 +32,7 @@ INDUSTRY_TR = {
     "Investment Trusts/Mutual Funds": "Yatırım Ortaklığı",
     "Real Estate Investment Trusts": "GYO", "Real Estate Development": "Gayrimenkul",
     "Property/Casualty Insurance": "Sigorta", "Multi-Line Insurance": "Sigorta",
-    "Life/Health Insurance": "Hayat Sigortası", "Insurance Brokers/Services": "Sigorta",
+    "Life/Health Insurance": "Sigorta", "Insurance Brokers/Services": "Sigorta",
     "Specialty Insurance": "Sigorta", "Financial Conglomerates": "Holding",
     "Financial Publishing/Services": "Finansal Hizmetler",
     # Holding
