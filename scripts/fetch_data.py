@@ -374,6 +374,36 @@ def process(symbol: str, name: str = "") -> dict | None:
 
 # ------------------------------------------------------------------ ana akış
 
+def build_sector_map() -> dict[str, str]:
+    """İş Yatırım hisse tarama ekranından sektör -> hisse eşlemesi (sektör başına bir istek)."""
+    from borsapy._providers.isyatirim_screener import get_screener_provider
+    prov = get_screener_provider()
+    try:
+        sectors = prov.get_sectors()
+    except Exception as e:  # noqa: BLE001
+        print(f"Sektör listesi alınamadı: {e}", flush=True)
+        return {}
+    out: dict[str, str] = {}
+    for sec in sectors:
+        name = (sec.get("name") or "").strip()
+        if not name:
+            continue
+        rows = []
+        for key in (sec.get("id"), name):  # kaynak bazen id, bazen ad bekliyor
+            if not key:
+                continue
+            try:
+                rows = prov.screen(criterias=[("7", "0", "100000000", "False")], sector=str(key))
+            except Exception:  # noqa: BLE001
+                rows = []
+            if rows:
+                break
+        for r in rows:
+            out.setdefault(r["symbol"], name)
+    print(f"Sektör: {len(sectors)} sektör, {len(out)} hisse eşlendi", flush=True)
+    return out
+
+
 INDEXES = ["XUTUM", "XU100"]   # sırayla dene: BIST Tüm, olmazsa BIST 100
 
 
@@ -420,6 +450,12 @@ def main():
         except Exception:  # noqa: BLE001
             pass
 
+    try:
+        sector_map = build_sector_map()
+    except Exception as e:  # noqa: BLE001
+        print(f"Sektör eşlemesi başarısız: {e}", flush=True)
+        sector_map = {}
+
     results, failed = [], []
     n = len(targets)
 
@@ -438,6 +474,14 @@ def main():
                 s = fut.result()
                 if not s:
                     raise RuntimeError("boş veri")
+                s["sector"] = sector_map.get(sym) or (old.get(sym) or {}).get("sector")
+                if s["sector"]:  # detay dosyasına da yaz
+                    fp = STOCKS / f"{sym}.json"
+                    try:
+                        d = json.loads(fp.read_text(encoding="utf-8")); d["sector"] = s["sector"]
+                        fp.write_text(json.dumps(d, ensure_ascii=False), encoding="utf-8")
+                    except Exception:  # noqa: BLE001
+                        pass
                 results.append(s)
                 print(f"[{i}/{n}] {sym} ✓ {s['last_period']}", flush=True)
             except Exception as e:  # noqa: BLE001
