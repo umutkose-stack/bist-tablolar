@@ -144,7 +144,6 @@ MERGE = {
     "Giyim Perakende": "Hazır Giyim",
     "Otomotiv Yedek Parça": "Otomotiv Yan Sanayi",
     "Gıda Dağıtım": "Gıda",
-    "GYO": "Gayrimenkul ve GYO", "Gayrimenkul": "Gayrimenkul ve GYO",
     "Bilişim": "Yazılım ve Bilişim", "Yazılım": "Yazılım ve Bilişim",
     "Denizcilik": "Ulaştırma", "Kargo": "Ulaştırma", "Kara Taşımacılığı": "Ulaştırma", "Demiryolu": "Ulaştırma",
 }
