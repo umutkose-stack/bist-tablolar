@@ -909,9 +909,9 @@ function relLine(d, k) {
   const me = d[k];
   let tail = "";
   if (peerValid(d,m)) {
-    if (m.margin) { const dp = (me - med) * 100; const good = m.inv ? dp <= 0 : dp >= 0; tail = ` · <b class="${good ? "rp" : "rn"}">${dp >= 0 ? "+" : "−"}${nf(1).format(Math.abs(dp))} puan</b>`; }
+    if (m.margin) { const dp = (me - med) * 100; const good = m.inv ? dp <= 0 : dp >= 0; tail = Math.abs(dp) < 0.05 ? ` · <b>medyana eşit</b>` : ` · <b class="${good ? "rp" : "rn"}">${dp >= 0 ? "+" : "−"}${nf(1).format(Math.abs(dp))} puan</b>`; }
     else if (m.abs) tail = me < 0 ? ` · <b class="rp">net nakit</b>` : ` · <b class="${me <= med ? "rp" : "rn"}">${me <= med ? "daha az borçlu" : "daha borçlu"}</b>`;
-    else if (med > 0) { const pr = (me / med - 1) * 100; tail = ` · <b class="${pr <= 0 ? "rp" : "rn"}">%${nf(0).format(Math.abs(pr))} ${pr <= 0 ? "düşük" : "yüksek"} ${m.l}</b>`; }
+    else if (med > 0) { const pr = (me / med - 1) * 100; tail = Math.abs(pr) < 0.5 ? ` · <b>medyana eşit ${m.l}</b>` : ` · <b class="${pr <= 0 ? "rp" : "rn"}">%${nf(0).format(Math.abs(pr))} ${pr <= 0 ? "düşük" : "yüksek"} ${m.l}</b>`; }
   }
   const lbl = useSec ? (wide ? `${esc(sec)} medyanı` : "Grup medyanı") : "BIST medyanı";
   return `<div class="s rel-s" title="${useSec ? esc(sec) + " · " + vals.length + " şirket" : "Tüm BIST"}">${lbl} ${m.fmt(med)}${tail}</div>`;
@@ -944,13 +944,13 @@ function renderRelative(d) {
       if (m.margin) {
         const diff = (me - med) * 100;
         const good = m.inv ? diff <= 0 : diff >= 0;
-        txt = `<b class="${good ? "good" : "bad"}">${diff >= 0 ? "+" : "−"}${nf(1).format(Math.abs(diff))} puan</b> grup medyanına göre · ${sorted.length} şirket içinde ${rank}. ${m.low ? "en düşük" : "en yüksek"}`;
+        txt = (Math.abs(diff) < 0.05 ? `<b>Grup medyanına eşit</b>` : `<b class="${good ? "good" : "bad"}">${diff >= 0 ? "+" : "−"}${nf(1).format(Math.abs(diff))} puan</b> grup medyanına göre`) + ` · ${sorted.length} şirket içinde ${rank}. ${m.low ? "en düşük" : "en yüksek"}`;
       } else if (m.abs) {
         txt = me < 0 ? `<b class="good">Net nakit</b> · grup medyanı ${m.fmt(med)} · ${sorted.length} şirket içinde ${rank}. en az borçlu`
                      : `Grup medyanı ${m.fmt(med)} · <b class="${me <= med ? "good" : "bad"}">${me <= med ? "gruptan az borçlu" : "gruptan borçlu"}</b> · ${sorted.length} şirket içinde ${rank}. en az borçlu`;
       } else {
         const prem = med > 0 ? (me / med - 1) * 100 : null;
-        txt = (prem == null ? "Medyan sıfır; yüzdesel fark hesaplanmaz" : `Grup medyanından <b>%${nf(0).format(Math.abs(prem))} ${prem <= 0 ? "düşük" : "yüksek"} ${m.l}</b>`) + ` · ${sorted.length} şirket içinde ${rank}. en düşük çarpan`;
+        txt = (prem == null ? "Medyan sıfır; yüzdesel fark hesaplanmaz" : Math.abs(prem) < 0.5 ? `<b>Grup medyanına eşit ${m.l}</b>` : `Grup medyanından <b>%${nf(0).format(Math.abs(prem))} ${prem <= 0 ? "düşük" : "yüksek"} ${m.l}</b>`) + ` · ${sorted.length} şirket içinde ${rank}. en düşük çarpan`;
       }
     } else {
       txt = DataContext.reason(d, m.k) || "Veri yok";
