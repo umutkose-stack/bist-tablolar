@@ -134,3 +134,17 @@ def tr_label(sector: str | None, industry: str | None) -> tuple[str | None, str 
     main = SECTOR_TR.get(sector or "", sector or None)
     label = INDUSTRY_TR.get(industry or "") or main
     return label, main
+
+
+# Etiket birleştirmeleri (vektör benzerlik analizinden sonra elle onaylananlar, 06.11.2026)
+MERGE = {
+    "Elektronik Dağıtım": "Elektronik", "Elektronik Perakende": "Elektronik",
+    "Metal İşleme": "Metal ve Maden",
+    "Petrol": "Petrol ve Rafineri", "Rafineri": "Petrol ve Rafineri",
+    "Giyim Perakende": "Hazır Giyim",
+    "Otomotiv Yedek Parça": "Otomotiv Yan Sanayi",
+    "Gıda Dağıtım": "Gıda",
+    "GYO": "Gayrimenkul ve GYO", "Gayrimenkul": "Gayrimenkul ve GYO",
+    "Bilişim": "Yazılım ve Bilişim", "Yazılım": "Yazılım ve Bilişim",
+    "Denizcilik": "Ulaştırma", "Kargo": "Ulaştırma", "Kara Taşımacılığı": "Ulaştırma", "Demiryolu": "Ulaştırma",
+}
