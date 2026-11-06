@@ -325,7 +325,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
       <select id="peerMode"><option value="auto">Otomatik</option><option value="sector">Aynı alt sektör</option><option value="main">Aynı ana sektör</option><option value="bist">Tüm BIST</option></select>
       <span class="meta">Medyan, seçili şirket dahil geçerli değerlerden hesaplanır.</span></div>
     <div class="panel sec rel" id="rel"></div>
-    <div class="label"><span>03 / Değerleme ve borç</span></div>
+    <div class="label"><span id="lbl3">03 / Değerleme ve borç</span></div>
     <div class="tiles" id="tiles"></div>
     <div class="label"><span id="lbl4">04 / Çeyreklik marjlar</span></div>
     <div class="panel chartbox"><div class="cw"><canvas id="mChart"></canvas></div></div>
@@ -398,18 +398,18 @@ const LOW_GOOD = ["pe", "pb", "ev_ebitda", "nd_ebitda", "peg", "combined_ratio_t
 const pct1 = v => v == null ? "—" : "%" + nf(1).format(v * 100);
 /* Tablo sütunları: genel görünüm ve sigorta görünümü (Sektör = Sigorta seçiliyken) */
 const COLS_GENERAL = [
-  { k: "ev_ebitda", h: "FD/FAVÖK", t: "Firma değeri / son 12 ay FAVÖK", f: mult },
-  { k: "nd_ebitda", h: "Net Borç/<br>FAVÖK", t: "Net borç / son 12 ay FAVÖK. Negatif = net nakit", f: ndx, cls: s => s.nd_ebitda != null && s.nd_ebitda < 0 ? "pos" : "" },
-  { k: "peg", h: "PEG", t: "F/K ÷ yıllık net kâr büyümesi (%)", f: mult },
-  { k: "op", h: "Esas Faal.<br>Marjı", f: pct, cls: s => sign(val(s, "op")) },
-  { k: "net", h: "Net Kâr<br>Marjı", f: pct, cls: s => sign(val(s, "net")) },
+  { k: "ev_ebitda", h: "FD/FAVÖK", t: "Firma değeri / son 12 ay FAVÖK", f: v => mult(v) },
+  { k: "nd_ebitda", h: "Net Borç/<br>FAVÖK", t: "Net borç / son 12 ay FAVÖK. Negatif = net nakit", f: v => ndx(v), cls: s => s.nd_ebitda != null && s.nd_ebitda < 0 ? "pos" : "" },
+  { k: "peg", h: "PEG", t: "F/K ÷ yıllık net kâr büyümesi (%)", f: v => mult(v) },
+  { k: "op", h: "Esas Faal.<br>Marjı", f: v => pct(v), cls: s => sign(val(s, "op")) },
+  { k: "net", h: "Net Kâr<br>Marjı", f: v => pct(v), cls: s => sign(val(s, "net")) },
 ];
 const COLS_INS = [
-  { k: "gwp_growth", h: "Prim<br>Büyümesi", t: "Brüt yazılan primlerin yıllık büyümesi (son 12 ay, nominal)", f: pct1, cls: s => sign(s.gwp_growth) },
-  { k: "loss_ratio_ttm", h: "Hasar/<br>Prim", t: "Hayat dışı: gerçekleşen hasarlar / kazanılmış primler", f: pct1 },
-  { k: "roe", h: "ROE", t: "Son 12 ay net kâr / ortalama özsermaye", f: pct1, cls: s => sign(s.roe) },
-  { k: "combined_ratio_ttm", h: "Bileşik<br>Rasyo", t: "Hasar oranı + gider oranı (hayat dışı). %100 altı = teknik kâr", f: pct1, cls: s => s.combined_ratio_ttm == null ? "" : (s.combined_ratio_ttm < 1 ? "pos" : "neg") },
-  { k: "net_premium_margin_ttm", h: "Net Kâr/<br>Prim", t: "Son 12 ay net kâr / brüt yazılan primler", f: pct1, cls: s => sign(s.net_premium_margin_ttm) },
+  { k: "gwp_growth", h: "Prim<br>Büyümesi", t: "Brüt yazılan primlerin yıllık büyümesi (son 12 ay, nominal)", f: v => pct1(v), cls: s => sign(s.gwp_growth) },
+  { k: "loss_ratio_ttm", h: "Hasar/<br>Prim", t: "Hayat dışı: gerçekleşen hasarlar / kazanılmış primler", f: v => pct1(v) },
+  { k: "roe", h: "ROE", t: "Son 12 ay net kâr / ortalama özsermaye", f: v => pct1(v), cls: s => sign(s.roe) },
+  { k: "combined_ratio_ttm", h: "Bileşik<br>Rasyo", t: "Hasar oranı + gider oranı (hayat dışı). %100 altı = teknik kâr", f: v => pct1(v), cls: s => s.combined_ratio_ttm == null ? "" : (s.combined_ratio_ttm < 1 ? "pos" : "neg") },
+  { k: "net_premium_margin_ttm", h: "Net Kâr/<br>Prim", t: "Son 12 ay net kâr / brüt yazılan primler", f: v => pct1(v), cls: s => sign(s.net_premium_margin_ttm) },
 ];
 const listCols = () => secSel === "Sigorta" ? COLS_INS : COLS_GENERAL;
 function renderHead() {
@@ -583,6 +583,7 @@ async function renderDetail(sym) {
 }
 function setLabels(ins) {
   $("#lbl4").textContent = ins ? "04 / Çeyreklik sigortacılık oranları" : "04 / Çeyreklik marjlar";
+  $("#lbl3").textContent = ins ? "03 / Prim, hasar ve gider" : "03 / Değerleme ve borç";
   $("#chMarg").textContent = ins ? "Oranlar" : "Marjlar";
   $("#chAbs").textContent = ins ? "Brüt yazılan prim ve net kâr" : "Satışlar ve net kâr";
 }
