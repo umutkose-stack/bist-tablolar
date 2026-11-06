@@ -517,7 +517,8 @@ def process(symbol: str, name: str = "") -> dict | None:
                 for k in series:
                     series[k][c] = None
     expected = [shift_q(cols_all[0], -i) for i in range(8)]
-    missing = [c for c in expected if c not in available]
+    has_data = {c for c in cols_all if c in inc.columns and inc[c].notna().any()}   # herhangi bir satırı dolu
+    missing = [c for c in expected if c not in has_data]
 
     cols = cols_all[:QUARTERS]
 

@@ -18,6 +18,7 @@
       return 'Bu sektör için uygulanmaz';
     const equity = s.equity ?? s.quarters?.[0]?.equity;
     if (k === 'pe' && ((v != null && v < 0) || s.net_ttm < 0)) return 'Zarar nedeniyle anlamlı değil';
+    if (['pe','pb','peg'].includes(k) && gapMsg && s.net_ttm == null) return gapMsg;
     if (k === 'pe' && na.includes('pe')) return 'Kaynakta anlamlı değil (A/D)';
     if (k === 'pb' && ((v != null && v < 0) || equity < 0)) return 'Negatif özkaynak nedeniyle anlamlı değil';
     if (k === 'pb' && na.includes('pb')) return 'Kaynakta anlamlı değil (A/D)';
