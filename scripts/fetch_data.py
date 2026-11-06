@@ -625,6 +625,7 @@ def process(symbol: str, name: str = "") -> dict | None:
         "pb_basis": "calc" if pb_calc is not None else ("src" if pb is not None else None),
         "ttm_gap": rev_ttm is None and net_ttm is None and any(series["revenue"].get(c) is not None for c in cols[:4]),
         "missing_periods": missing,
+        "suspect_periods": suspect,
         "ev_ebitda": ev_ebitda,
         "net_debt": net_debt,
         "ebitda_ttm": ebitda,
@@ -659,7 +660,6 @@ def process(symbol: str, name: str = "") -> dict | None:
         "balance_sheet": df_to_table(bal[[c for c in cols if c in bal.columns]]) if bal is not None and not bal.empty else None,
         "income_is_cumulative": INCOME_IS_CUMULATIVE,
         "inflation_adjusted": use_adj,
-        "suspect_periods": suspect,
         "adjust_method": method,
         "money_base": base if use_adj else None,
     }

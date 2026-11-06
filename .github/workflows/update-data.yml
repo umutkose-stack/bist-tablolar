@@ -26,6 +26,10 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+      - name: Testler (hesap kuralları bozulduysa veriyi güncelleme)
+        run: |
+          python -m unittest discover -s tests -p "test_*.py"
+          node --test tests/data-context.test.cjs
       - run: python scripts/fetch_data.py ${{ github.event.inputs.symbols }}
         env:
           PYTHONUNBUFFERED: "1"

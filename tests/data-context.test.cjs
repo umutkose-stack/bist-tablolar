@@ -1,6 +1,6 @@
 const {test} = require('node:test');
 const assert = require('node:assert/strict');
-const {reason,date} = require('../assets/data-context.js');
+const {reason,date,validMargin,ratioNote,fillPeriods} = require('../assets/data-context.js');
 test('unknown data is not diagnosed as a loss',()=>{
  assert.equal(reason({pe:null},'pe'),'Veri yok');
  assert.equal(reason({pe:null,net_ttm:-10},'pe'),'Zarar nedeniyle anlamlı değil');
@@ -38,4 +38,27 @@ test('source A/D markers, negative equity in summary, tiny revenue and prior-yea
 test('gaps in the last four quarters are named, not hidden', ()=>{
  assert.equal(reason({net_ttm:null,pe:null,last_period:'2026Q3',missing_periods:['2025Q4']},'pe'),'Son 4 çeyrek kesintisiz değil (kaynakta eksik: 2025/12); 12 aylık değer hesaplanmadı');
  assert.equal(reason({kind:'sigorta',ins_type:'hayat_disi',roe:null,last_period:'2026Q3',missing_periods:['2026Q2','2025Q4']},'roe'),'Son 4 çeyrek kesintisiz değil (kaynakta eksik: 2026/6, 2025/12); 12 aylık değer hesaplanmadı');
+});
+test('margin validity rule is shared by cards and charts', ()=>{
+ assert.equal(validMargin(5, 100), 0.05);
+ assert.equal(validMargin(-50, 100), -0.5);
+ assert.equal(validMargin(1725, 10), null);      // ZGYO benzeri: |oran| > 10
+ assert.equal(validMargin(5, 0), null);
+ assert.equal(validMargin(5, -3), null);
+ assert.equal(validMargin(null, 3), null);
+});
+test('source-based ratios are labelled as such; no definitions invented', ()=>{
+ assert.equal(ratioNote({pe:2, pe_basis:'src', net_ttm:null}, 'pe'), 'Kaynak F/K (İş Yatırım); uygulamada son 12 ay net kârı hesaplanamadı');
+ assert.equal(ratioNote({pb:1.1, pb_basis:'src'}, 'pb'), 'Kaynak PD/DD (İş Yatırım); uygulamada özkaynak bulunamadı');
+ assert.equal(ratioNote({pe:3.49, pe_basis:'calc', pe_src:2.8}, 'pe'), 'Kaynak (İş Yatırım): 2,80');
+ assert.equal(ratioNote({pe:3.49, pe_basis:'calc', pe_src:3.5}, 'pe'), '');
+ assert.equal(ratioNote({pe:null, pe_basis:null}, 'pe'), '');
+});
+test('chart axis keeps missing quarters (so lines break instead of bridging)', ()=>{
+ const f = fillPeriods([{period:'2026Q1',v:1},{period:'2025Q3',v:2}]);
+ assert.deepEqual(f.map(q=>q.period), ['2026Q1','2025Q4','2025Q3']);
+ assert.equal(f[1].missing, true);
+});
+test('suspect quarters in the last four are named in the reason', ()=>{
+ assert.match(reason({pe:null, net_ttm:null, last_period:'2026Q3', suspect_periods:['2025Q4']}, 'pe'), /2025\/12: çeyreklik satış negatif hesaplandı/);
 });

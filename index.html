@@ -530,8 +530,8 @@ async function renderDetail(sym) {
   if (d.kind === "sigorta") { renderInsurance(d, tile); return; }
   setLabels(false);
   $("#band").innerHTML =
-    tile("F/K", metricHtml(d, "pe", mult), "Piy. değ. / net kâr (12 ay): " + money(d.net_ttm) + srcNote(d, "pe"), "", "pe") +
-    tile("PD/DD", metricHtml(d, "pb", mult), "Piy. değ. / özkaynak: " + money(d.equity ?? d.quarters?.[0]?.equity) + srcNote(d, "pb"), "", "pb") +
+    tile("F/K", metricHtml(d, "pe", mult), peSub(d) + srcNote(d, "pe"), "", "pe") +
+    tile("PD/DD", metricHtml(d, "pb", mult), pbSub(d, d.equity ?? d.quarters?.[0]?.equity) + srcNote(d, "pb"), "", "pb") +
     tile("Esas faaliyet marjı", metricHtml(d, "op_margin_ttm", pct), "Son çeyrek: " + metricHtml(d, "op_margin_q", pct), sign(d.op_margin_ttm), "op_margin_ttm") +
     tile("Net kâr marjı", metricHtml(d, "net_margin_ttm", pct), "Son çeyrek: " + metricHtml(d, "net_margin_q", pct), sign(d.net_margin_ttm), "net_margin_ttm");
   $("#tiles").innerHTML =
@@ -540,7 +540,7 @@ async function renderDetail(sym) {
     tile("PEG", metricHtml(d, "peg", mult), "Net kâr büyümesi: " + pct(d.net_growth) + " (yıllık)") +
     tile("Piyasa değeri", money(d.market_cap), "FD: " + money(d.market_cap != null && d.net_debt != null ? d.market_cap + d.net_debt : null));
 
-  const qs = [...d.quarters].reverse();
+  const qs = DataContext.fillPeriods(d.quarters).reverse();
   const css = getComputedStyle(document.documentElement);
   const c1 = css.getPropertyValue("--s1").trim(), c2 = css.getPropertyValue("--s2").trim();
   const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
@@ -552,8 +552,8 @@ async function renderDetail(sym) {
     data: {
       labels: qs.map(q => per(q.period)),
       datasets: [
-        { label: "Esas faaliyet marjı", data: qs.map(q => q.op_margin == null ? null : q.op_margin * 100), borderColor: c1, backgroundColor: c1, tension: .25, spanGaps: true },
-        { label: "Net kâr marjı", data: qs.map(q => q.net_margin == null ? null : q.net_margin * 100), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: true }
+        { label: "Esas faaliyet marjı", data: qs.map(q => q.op_margin == null ? null : q.op_margin * 100), borderColor: c1, backgroundColor: c1, tension: .25, spanGaps: false },
+        { label: "Net kâr marjı", data: qs.map(q => q.net_margin == null ? null : q.net_margin * 100), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: false }
       ]
     },
     options: {
@@ -566,7 +566,7 @@ async function renderDetail(sym) {
   });
 
   $("#qTbl").innerHTML = `<thead><tr><th>Dönem</th><th class="n">Satışlar</th><th class="n">Brüt kâr</th><th class="n">Esas faal. kârı</th><th class="n">Net kâr</th><th class="n">Esas faal. marjı</th><th class="n">Net marj</th><th class="n">Özkaynak</th></tr></thead><tbody>` +
-    d.quarters.map(q => `<tr><td>${per(q.period)}</td><td class="n">${money(q.revenue)}</td><td class="n">${money(q.gross)}</td><td class="n ${sign(q.operating)}">${money(q.operating)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.op_margin)}">${pct(q.op_margin)}</td><td class="n ${sign(q.net_margin)}">${pct(q.net_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
+    DataContext.fillPeriods(d.quarters).map(q => q.missing ? `<tr><td>${per(q.period)}</td><td class="dim" colspan="7">Kaynakta bu dönem yok</td></tr>` : `<tr><td>${per(q.period)}</td><td class="n">${money(q.revenue)}</td><td class="n">${money(q.gross)}</td><td class="n ${sign(q.operating)}">${money(q.operating)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.op_margin)}">${pct(q.op_margin)}</td><td class="n ${sign(q.net_margin)}">${pct(q.net_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
   const adjTxt = d.inflation_adjusted
     ? `Tutarlar enflasyona göre düzeltildi: tümü ${per(d.money_base)} TL'si cinsinden (TÜFE ile). `
     : d.adjust_method === "usd" ? "Şirketin fonksiyonel para birimi döviz olduğu için tutarlar raporlandığı gibi (nominal TL) gösterilir. "
@@ -583,13 +583,14 @@ async function renderDetail(sym) {
 }
 /* Kaynağın (İş Yatırım) oranı bizim hesaptan belirgin farklıysa göster */
 function srcNote(d, k) {
-  const mine = d[k], src = d[k + "_src"];
-  if (d[k + "_basis"] !== "calc" || mine == null || src == null || src <= 0) return "";
-  return Math.abs(src / mine - 1) > 0.05 ? `<br><span title="İş Yatırım'ın cari oranı farklı kâr/özkaynak tanımı ya da enflasyon bazı kullanıyor olabilir">Kaynak (İş Yatırım): ${nf(2).format(src)}</span>` : "";
+  const t = DataContext.ratioNote(d, k);
+  return t ? `<br><span title="İş Yatırım'ın cari oranı farklı kâr/özkaynak tanımı ya da enflasyon bazı kullanıyor olabilir">${esc(t)}</span>` : "";
 }
+const peSub = d => d.pe_basis === "src" ? "" : "Piy. değ. / net kâr (12 ay): " + money(d.net_ttm);
+const pbSub = (d, eq) => d.pb_basis === "src" ? "" : "Piy. değ. / özkaynak: " + money(eq);
 function suspectNote(d) {
   const sp = d.suspect_periods || [];
-  return sp.length ? ` ${sp.map(per).join(", ")} çeyreği gösterilmedi: kaynaktaki dönem bazları tutarsız olduğu için satış negatif çıkıyordu.` : "";
+  return sp.length ? ` ${sp.map(per).join(", ")}: çeyreklik satış negatif hesaplandığı için bu dönem hesaplamalara alınmadı. Olası neden kaynaktaki dönemlerin farklı bazlarda tutulması; dönem bazı veya kaynak verisi kontrol edilmeli.` : "";
 }
 function setLabels(ins) {
   $("#lbl4").textContent = ins ? "04 / Çeyreklik sigortacılık oranları" : "04 / Çeyreklik marjlar";
@@ -608,11 +609,12 @@ function finishDetail(d) {
 function renderInsurance(d, tile) {
   setLabels(true);
   const life = d.ins_type === "hayat";
-  const iq = d.ins_quarters || [];
+  const iqRaw = d.ins_quarters || [];
+  const iq = DataContext.fillPeriods(iqRaw);
   const eq = iq[0]?.equity ?? d.equity;
   $("#band").innerHTML =
-    tile("F/K", metricHtml(d, "pe", mult), "Piy. değ. / net kâr (12 ay): " + money(d.net_ttm) + srcNote(d, "pe"), "", "pe") +
-    tile("PD/DD", metricHtml(d, "pb", mult), "Piy. değ. / özsermaye: " + money(eq) + srcNote(d, "pb"), "", "pb") +
+    tile("F/K", metricHtml(d, "pe", mult), peSub(d) + srcNote(d, "pe"), "", "pe") +
+    tile("PD/DD", metricHtml(d, "pb", mult), pbSub(d, eq) + srcNote(d, "pb"), "", "pb") +
     tile("ROE", metricHtml(d, "roe", pct1), "Net kâr / ortalama özsermaye", sign(d.roe), "roe") +
     (life ? tile("Net kâr/prim", metricHtml(d, "net_premium_margin_ttm", pct1), "Hayat/emeklilik şirketi", sign(d.net_premium_margin_ttm), "net_premium_margin_ttm")
           : tile("Bileşik rasyo", metricHtml(d, "combined_ratio_ttm", pct1), "%100 altı = teknik kâr", d.combined_ratio_ttm == null ? "" : (d.combined_ratio_ttm < 1 ? "pos" : "neg"), "combined_ratio_ttm"));
@@ -634,9 +636,9 @@ function renderInsurance(d, tile) {
     scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => "%" + v } } } };
   if (chart) chart.destroy();
   if (typeof Chart !== "undefined") chart = new Chart($("#mChart"), { type: "line", data: { labels: qs.map(q => per(q.period)), datasets: life
-      ? [{ label: "Net kâr/prim", data: qs.map(q => P(q.net_premium_margin)), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: true }]
-      : [{ label: "Bileşik rasyo", data: qs.map(q => P(q.combined_ratio)), borderColor: c1, backgroundColor: c1, tension: .25, spanGaps: true },
-         { label: "Hasar/prim", data: qs.map(q => P(q.loss_ratio)), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: true }] },
+      ? [{ label: "Net kâr/prim", data: qs.map(q => P(q.net_premium_margin)), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: false }]
+      : [{ label: "Bileşik rasyo", data: qs.map(q => P(q.combined_ratio)), borderColor: c1, backgroundColor: c1, tension: .25, spanGaps: false },
+         { label: "Hasar/prim", data: qs.map(q => P(q.loss_ratio)), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: false }] },
     options: lineOpts });
 
   // TTM: son 4 çeyrek toplamları
@@ -646,18 +648,18 @@ function renderInsurance(d, tile) {
     const w = iq.slice(i, i + 4); let ok = true; for (let j = 0; j < 3; j++) if (nextQ(w[j + 1].period) !== w[j].period) ok = false;
     const sum = k => (ok && w.every(q => q[k] != null)) ? w.reduce((a, q) => a + q[k], 0) : null;
     const g = sum("gwp"), e = sum("earned_nl"), cl = sum("claims_nl"), ox = sum("opex_nl"), n = sum("net");
-    T.push({ period: w[0].period, gwp: g, net: n, npm: g ? (n == null ? null : n / g) : null,
-      cr: (!life && e && cl != null && ox != null) ? (-cl - ox) / e : null });
+    T.push({ period: w[0].period, gwp: g, net: n, npm: DataContext.validMargin(n, g),
+      cr: (!life && cl != null && ox != null) ? DataContext.validMargin(-cl - ox, e) : null });
   }
   T.reverse();
   if (typeof Chart !== "undefined" && T.length >= 2) {
     const labels = T.map(q => per(q.period));
     tCharts.push(new Chart($("#tMarg"), { type: "line", data: { labels, datasets: [
-      ...(life ? [] : [{ label: "Bileşik rasyo (TTM)", data: T.map(q => P(q.cr)), borderColor: c1, backgroundColor: c1, borderWidth: 2, tension: .25, spanGaps: true }]),
-      { label: "Net kâr/prim (TTM)", data: T.map(q => P(q.npm)), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, spanGaps: true }] }, options: lineOpts }));
+      ...(life ? [] : [{ label: "Bileşik rasyo (TTM)", data: T.map(q => P(q.cr)), borderColor: c1, backgroundColor: c1, borderWidth: 2, tension: .25, spanGaps: false }]),
+      { label: "Net kâr/prim (TTM)", data: T.map(q => P(q.npm)), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, spanGaps: false }] }, options: lineOpts }));
     tCharts.push(new Chart($("#tAbs"), { data: { labels, datasets: [
       { type: "bar", label: "Brüt yazılan prim (TTM)", data: T.map(q => q.gwp), backgroundColor: c1 + "33", borderColor: c1, borderWidth: 1, yAxisID: "y" },
-      { type: "line", label: "Net kâr (TTM)", data: T.map(q => q.net), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, yAxisID: "y1", spanGaps: true }] },
+      { type: "line", label: "Net kâr (TTM)", data: T.map(q => q.net), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, yAxisID: "y1", spanGaps: false }] },
       options: { ...lineOpts, plugins: { ...lineOpts.plugins, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y)}` } } },
         scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => money(v) } },
           y1: { position: "right", grid: { display: false }, ticks: { color: c2, callback: v => money(v) } } } } }));
@@ -665,7 +667,7 @@ function renderInsurance(d, tile) {
   $("#tNote").textContent = T.length >= 2 ? "Her nokta son 4 çeyreğin toplamı. Sigortacılar TMS 29 uygulamadığı için tutarlar nominaldir." : "TTM için yeterli çeyrek yok (kaynakta bazı dönemler eksik).";
 
   $("#qTbl").innerHTML = `<thead><tr><th>Dönem</th><th class="n">Brüt prim</th><th class="n">Kaz. prim (HD)</th><th class="n">Hasar/prim</th><th class="n">Bileşik rasyo</th><th class="n">Teknik denge</th><th class="n">Net kâr</th><th class="n">Net kâr/prim</th><th class="n">Özsermaye</th></tr></thead><tbody>` +
-    iq.map(q => `<tr><td>${per(q.period)}</td><td class="n">${money(q.gwp)}</td><td class="n">${money(q.earned_nl)}</td><td class="n">${life ? "u.d." : pct1(q.loss_ratio)}</td><td class="n ${q.combined_ratio == null ? "" : (q.combined_ratio < 1 ? "pos" : "neg")}">${life ? "u.d." : pct1(q.combined_ratio)}</td><td class="n ${sign(q.tech)}">${money(q.tech)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.net_premium_margin)}">${pct1(q.net_premium_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
+    iq.map(q => q.missing ? `<tr><td>${per(q.period)}</td><td class="dim" colspan="8">Kaynakta bu dönem yok</td></tr>` : `<tr><td>${per(q.period)}</td><td class="n">${money(q.gwp)}</td><td class="n">${money(q.earned_nl)}</td><td class="n">${life ? "u.d." : pct1(q.loss_ratio)}</td><td class="n ${q.combined_ratio == null ? "" : (q.combined_ratio < 1 ? "pos" : "neg")}">${life ? "u.d." : pct1(q.combined_ratio)}</td><td class="n ${sign(q.tech)}">${money(q.tech)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.net_premium_margin)}">${pct1(q.net_premium_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
   $("#qNote").textContent = "Sigortacılar için satış ve esas faaliyet kârı yerine prim, hasar ve teknik bölüm dengesi kullanılır. Bileşik rasyo = (gerçekleşen hasarlar + faaliyet giderleri) / kazanılmış primler, hayat dışı branş için; %100'ün altı teknik kâr demektir. Hayat/emeklilik şirketlerinde bileşik rasyo uygulanmaz (u.d.). Tutarlar nominal; tek çeyrekler kümülatiften fark alınarak bulunur.";
   finishDetail(d);
 }
@@ -726,14 +728,14 @@ function ttmQuarters(qs) {             // qs: yeniden eskiye tek çeyrekler -> y
     const sum = k => (ok && w.every(q => q[k] != null)) ? w.reduce((a, q) => a + q[k], 0) : null;
     const rev = sum("revenue"), op = sum("operating"), net = sum("net");
     out.push({ period: w[0].period, revenue: rev, operating: op, net,
-      op_margin: rev ? (op == null ? null : op / rev) : null, net_margin: rev ? (net == null ? null : net / rev) : null });
+      op_margin: DataContext.validMargin(op, rev), net_margin: DataContext.validMargin(net, rev) });
   }
   return out;
 }
 let tCharts = [];
 function renderTTM(d) {
   tCharts.forEach(c => c.destroy()); tCharts = [];
-  const t = ttmQuarters(d.quarters).reverse();
+  const t = ttmQuarters(DataContext.fillPeriods(d.quarters)).reverse();
   if (typeof Chart === "undefined") { $("#tNote").textContent = "Grafik kütüphanesi yüklenemedi."; return; }
   if (t.length < 2) { $("#tNote").textContent = "TTM için yeterli çeyrek yok."; return; }
   const css = getComputedStyle(document.documentElement);
@@ -744,14 +746,14 @@ function renderTTM(d) {
     plugins: { legend: { labels: { color: muted, boxWidth: 12 } } } };
   tCharts.push(new Chart($("#tMarg"), { type: "line",
     data: { labels, datasets: [
-      { label: "Esas faaliyet marjı", data: t.map(q => q.op_margin == null ? null : q.op_margin * 100), borderColor: c1, backgroundColor: c1, borderWidth: 2, tension: .25, spanGaps: true },
-      { label: "Net kâr marjı", data: t.map(q => q.net_margin == null ? null : q.net_margin * 100), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, spanGaps: true }] },
+      { label: "Esas faaliyet marjı", data: t.map(q => q.op_margin == null ? null : q.op_margin * 100), borderColor: c1, backgroundColor: c1, borderWidth: 2, tension: .25, spanGaps: false },
+      { label: "Net kâr marjı", data: t.map(q => q.net_margin == null ? null : q.net_margin * 100), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, spanGaps: false }] },
     options: { ...base, plugins: { ...base.plugins, tooltip: { callbacks: { label: c => `${c.dataset.label}: %${nf(1).format(c.parsed.y)}` } } },
       scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => "%" + v } } } } }));
   tCharts.push(new Chart($("#tAbs"), {
     data: { labels, datasets: [
       { type: "bar", label: "Satışlar (TTM)", data: t.map(q => q.revenue), backgroundColor: c1 + "33", borderColor: c1, borderWidth: 1, yAxisID: "y" },
-      { type: "line", label: "Net kâr (TTM)", data: t.map(q => q.net), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, yAxisID: "y1", spanGaps: true }] },
+      { type: "line", label: "Net kâr (TTM)", data: t.map(q => q.net), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, yAxisID: "y1", spanGaps: false }] },
     options: { ...base, plugins: { ...base.plugins, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y)}` } } },
       scales: { x: { grid: { display: false }, ticks: { color: muted } },
         y: { position: "left", grid: { color: grid }, ticks: { color: muted, callback: v => money(v) } },
@@ -844,14 +846,15 @@ async function renderCompare(syms) {
   const cols = ["--s1", "--s2", "--s3"].map(v => css.getPropertyValue(v).trim());
   const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
   cLast = syms;
-  const series = d => cMode === "ttm" ? ttmQuarters(d.quarters) : d.quarters;
-  const periods = [...new Set(ds.flatMap(d => series(d).filter(q => q.op_margin != null || q.net_margin != null).map(q => q.period)))].sort();
+  const series = d => cMode === "ttm" ? ttmQuarters(DataContext.fillPeriods(d.quarters)) : d.quarters;
+  const present = ds.flatMap(d => series(d).filter(q => q.op_margin != null || q.net_margin != null).map(q => ({ period: q.period })));
+  const periods = DataContext.fillPeriods(present).map(q => q.period).reverse();
   document.querySelectorAll(".cmr").forEach(e => e.textContent = cMode === "ttm" ? "son 12 ay (TTM)" : "tek çeyrek");
   const mk = (canvas, key) => new Chart(canvas, {
     type: "line",
     data: { labels: periods.map(per), datasets: ds.map((d, i) => {
       const m = Object.fromEntries(series(d).map(q => [q.period, q[key]]));
-      return { label: d.symbol, data: periods.map(p => m[p] == null ? null : m[p] * 100), borderColor: cols[i], backgroundColor: cols[i], borderWidth: 2, pointRadius: 3, tension: .25, spanGaps: true };
+      return { label: d.symbol, data: periods.map(p => m[p] == null ? null : m[p] * 100), borderColor: cols[i], backgroundColor: cols[i], borderWidth: 2, pointRadius: 3, tension: .25, spanGaps: false };
     }) },
     options: {
       maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
