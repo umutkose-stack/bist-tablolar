@@ -395,7 +395,7 @@ function money(v) {
 const mult = v => v == null ? "—" : (v < 0 ? "a.d." : nf(2).format(v));
 const ndx = v => v == null ? "—" : (v < 0 ? "net nakit" : nf(2).format(v));
 const LOW_GOOD = ["pe", "pb", "ev_ebitda", "nd_ebitda", "peg", "combined_ratio_ttm", "loss_ratio_ttm"];
-const pct1 = v => v == null ? "—" : "%" + nf(1).format(v * 100);
+const pct1 = v => pct(v);
 /* Tablo sütunları: genel görünüm ve sigorta görünümü (Sektör = Sigorta seçiliyken) */
 const COLS_GENERAL = [
   { k: "ev_ebitda", h: "FD/FAVÖK", t: "Firma değeri / son 12 ay FAVÖK", f: v => mult(v) },
@@ -416,7 +416,7 @@ function renderHead() {
   $("#tblHead").innerHTML = `<tr><th data-k="symbol">Hisse</th><th data-k="price" class="n c-price">Fiyat</th><th data-k="market_cap" class="n">Piy.<br>Değeri</th><th data-k="pe" class="n">F/K</th><th data-k="pb" class="n">PD/DD</th>` +
     listCols().map(c => `<th data-k="${c.k}" class="n"${c.t ? ` title="${c.t}"` : ""}>${c.h}</th>`).join("") + `</tr>`;
 }
-const pct = v => v == null ? "—" : "%" + nf(1).format(v * 100);
+const pct = v => v == null ? "—" : (v < 0 ? "−%" : "%") + nf(1).format(Math.abs(v * 100));
 const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
 const per = p => p ? p.replace(/(\d{4})Q(\d)/, (_, y, q) => `${y}/${q * 3}`) : "—";
 
