@@ -247,7 +247,7 @@ def _tr_num(txt: str):
 def company_metrics(prov, symbol: str) -> dict:
     """İş Yatırım şirket kartındaki 'Cari Değerler' tablosu."""
     url = f"https://www.isyatirim.com.tr/tr-tr/analiz/hisse/Sayfalar/sirket-karti.aspx?hisse={symbol}"
-    out = {"market_cap": None, "pe_ratio": None, "pb_ratio": None, "ev_ebitda": None, "net_debt": None}
+    out = {"market_cap": None, "pe_ratio": None, "pb_ratio": None, "ev_ebitda": None, "net_debt": None, "na": []}
     html = None
     for attempt in range(3):
         try:
@@ -266,6 +266,11 @@ def company_metrics(prov, symbol: str) -> dict:
         label = label.strip()
         v = _tr_num(value)
         if v is None:
+            if re.search(r"A\s*/\s*D", value, flags=re.I):  # kaynak: anlamlı değil
+                key = ("pe" if ("F/K" in label and "FD" not in label) else "pb" if "PD/DD" in label
+                       else "ev_ebitda" if "FD/FAVÖK" in label else None)
+                if key:
+                    out["na"].append(key)
             continue
         if "F/K" in label and "FD" not in label:
             out["pe_ratio"] = v
@@ -435,12 +440,16 @@ def process(symbol: str, name: str = "") -> dict | None:
     # Piyasa değeri ve İş Yatırım'ın hesapladığı oranlar
     metrics = company_metrics(t._get_isyatirim(), symbol)  # noqa: SLF001
     mcap = clean(metrics.get("market_cap"))
-    price = None
+    price, price_time = None, None
     try:  # önce İş Yatırım'ın hızlı fiyat servisi
         import warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            price = clean(t._get_isyatirim().get_realtime_quote(symbol).get("last")) or None  # noqa: SLF001
+            qd = t._get_isyatirim().get_realtime_quote(symbol)  # noqa: SLF001
+        price = clean(qd.get("last")) or None
+        ut = qd.get("update_time")
+        if price and ut is not None:
+            price_time = ut.isoformat(timespec="minutes") if hasattr(ut, "isoformat") else str(ut)
     except Exception:  # noqa: BLE001
         pass
     if price is None:
@@ -448,6 +457,8 @@ def process(symbol: str, name: str = "") -> dict | None:
             ex = ThreadPoolExecutor(1)
             price = clean(ex.submit(lambda: t.fast_info["last_price"]).result(timeout=PRICE_TIMEOUT))
             ex.shutdown(wait=False)
+            if price:
+                price_time = datetime.now(timezone.utc).isoformat(timespec="minutes")
         except (FutTimeout, Exception):  # noqa: BLE001
             pass
 
@@ -477,6 +488,11 @@ def process(symbol: str, name: str = "") -> dict | None:
         "group": "banka" if group == "UFRS" else "sanayi",
         "last_period": cols[0],
         "price": price,
+        "price_at": price_time,
+        "fetched_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
+        "equity": last_equity,
+        "net_ttm_prev": net_ttm_prev,
+        "source_na": metrics.get("na") or [],
         "market_cap": mcap,
         "pe": pe,
         "pb": pb,

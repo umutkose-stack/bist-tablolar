@@ -25,3 +25,11 @@ test('timestamps are explicit and unknown dates are never invented',()=>{
  assert.equal(date('2026-11-05'),'05.11.2026');
  assert.match(date('2026-11-05T22:22:00Z'),/01:22.*TSİ/);
 });
+test('source A/D markers, negative equity in summary, tiny revenue and prior-year loss',()=>{
+ assert.equal(reason({ev_ebitda:null,source_na:['ev_ebitda'],operating_ttm:-5},'ev_ebitda'),'Negatif FAVÖK nedeniyle anlamlı değil');
+ assert.equal(reason({nd_ebitda:null,source_na:['ev_ebitda'],operating_ttm:5},'nd_ebitda'),'Kaynakta anlamlı değil (A/D)');
+ assert.equal(reason({pb:null,equity:-3},'pb'),'Negatif özkaynak nedeniyle anlamlı değil');
+ assert.equal(reason({op_margin_ttm:null,revenue_ttm:1,operating_ttm:-50},'op_margin_ttm'),'Satış çok düşük; marj anlamlı değil');
+ assert.equal(reason({op_margin_ttm:null},'op_margin_ttm'),'Veri yok');
+ assert.equal(reason({peg:null,pe:8,net_ttm:10,net_ttm_prev:-2},'peg'),'Geçen yıl zarar; büyüme ve PEG hesaplanamaz');
+});
