@@ -530,8 +530,8 @@ async function renderDetail(sym) {
   if (d.kind === "sigorta") { renderInsurance(d, tile); return; }
   setLabels(false);
   $("#band").innerHTML =
-    tile("F/K", metricHtml(d, "pe", mult), "Net kâr: " + money(d.net_ttm) + " (12 ay)", "", "pe") +
-    tile("PD/DD", metricHtml(d, "pb", mult), "Özkaynak: " + money(d.quarters?.[0]?.equity), "", "pb") +
+    tile("F/K", metricHtml(d, "pe", mult), "Piy. değ. / net kâr (12 ay): " + money(d.net_ttm) + srcNote(d, "pe"), "", "pe") +
+    tile("PD/DD", metricHtml(d, "pb", mult), "Piy. değ. / özkaynak: " + money(d.equity ?? d.quarters?.[0]?.equity) + srcNote(d, "pb"), "", "pb") +
     tile("Esas faaliyet marjı", metricHtml(d, "op_margin_ttm", pct), "Son çeyrek: " + metricHtml(d, "op_margin_q", pct), sign(d.op_margin_ttm), "op_margin_ttm") +
     tile("Net kâr marjı", metricHtml(d, "net_margin_ttm", pct), "Son çeyrek: " + metricHtml(d, "net_margin_q", pct), sign(d.net_margin_ttm), "net_margin_ttm");
   $("#tiles").innerHTML =
@@ -571,7 +571,7 @@ async function renderDetail(sym) {
     ? `Tutarlar enflasyona göre düzeltildi: tümü ${per(d.money_base)} TL'si cinsinden (TÜFE ile). `
     : d.adjust_method === "usd" ? "Şirketin fonksiyonel para birimi döviz olduğu için tutarlar raporlandığı gibi (nominal TL) gösterilir. "
     : (d.group === "banka" ? "Bankalar TMS 29 uygulamadığı için tutarlar nominaldir. " : "");
-  $("#qNote").textContent = adjTxt + "Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır. FD/FAVÖK ve net borç İş Yatırım şirket kartından; FAVÖK buradan geri hesaplanır. " + (d.inflation_adjusted ? "PEG reel (enflasyondan arındırılmış) kâr büyümesiyle hesaplanır." : "PEG nominal kâr büyümesiyle hesaplanır; yüksek enflasyonda olduğundan düşük görünebilir.");
+  $("#qNote").textContent = adjTxt + suspectNote(d) + " Tek çeyrek değerleri (kümülatiften fark alınarak). Net kâr = ana ortaklık payı. 12 aylık değerler son 4 çeyreğin toplamıdır. FD/FAVÖK ve net borç İş Yatırım şirket kartından; FAVÖK buradan geri hesaplanır. " + (d.inflation_adjusted ? "PEG reel (enflasyondan arındırılmış) kâr büyümesiyle hesaplanır." : "PEG nominal kâr büyümesiyle hesaplanır; yüksek enflasyonda olduğundan düşük görünebilir.");
 
   renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
   renderRelative(d);
@@ -580,6 +580,16 @@ async function renderDetail(sym) {
   $("#dCmp").textContent = inC ? "✓ Karşılaştırmada" : "+ Karşılaştırmaya ekle";
   $("#dCmp").classList.toggle("on", inC);
   $("#dCmp").disabled = !inC && cmpSel.length >= 3;
+}
+/* Kaynağın (İş Yatırım) oranı bizim hesaptan belirgin farklıysa göster */
+function srcNote(d, k) {
+  const mine = d[k], src = d[k + "_src"];
+  if (d[k + "_basis"] !== "calc" || mine == null || src == null || src <= 0) return "";
+  return Math.abs(src / mine - 1) > 0.05 ? `<br><span title="İş Yatırım'ın cari oranı farklı kâr/özkaynak tanımı ya da enflasyon bazı kullanıyor olabilir">Kaynak (İş Yatırım): ${nf(2).format(src)}</span>` : "";
+}
+function suspectNote(d) {
+  const sp = d.suspect_periods || [];
+  return sp.length ? ` ${sp.map(per).join(", ")} çeyreği gösterilmedi: kaynaktaki dönem bazları tutarsız olduğu için satış negatif çıkıyordu.` : "";
 }
 function setLabels(ins) {
   $("#lbl4").textContent = ins ? "04 / Çeyreklik sigortacılık oranları" : "04 / Çeyreklik marjlar";
@@ -601,8 +611,8 @@ function renderInsurance(d, tile) {
   const iq = d.ins_quarters || [];
   const eq = iq[0]?.equity ?? d.equity;
   $("#band").innerHTML =
-    tile("F/K", metricHtml(d, "pe", mult), "Net kâr: " + money(d.net_ttm) + " (12 ay)", "", "pe") +
-    tile("PD/DD", metricHtml(d, "pb", mult), "Özsermaye: " + money(eq), "", "pb") +
+    tile("F/K", metricHtml(d, "pe", mult), "Piy. değ. / net kâr (12 ay): " + money(d.net_ttm) + srcNote(d, "pe"), "", "pe") +
+    tile("PD/DD", metricHtml(d, "pb", mult), "Piy. değ. / özsermaye: " + money(eq) + srcNote(d, "pb"), "", "pb") +
     tile("ROE", metricHtml(d, "roe", pct1), "Net kâr / ortalama özsermaye", sign(d.roe), "roe") +
     (life ? tile("Net kâr/prim", metricHtml(d, "net_premium_margin_ttm", pct1), "Hayat/emeklilik şirketi", sign(d.net_premium_margin_ttm), "net_premium_margin_ttm")
           : tile("Bileşik rasyo", metricHtml(d, "combined_ratio_ttm", pct1), "%100 altı = teknik kâr", d.combined_ratio_ttm == null ? "" : (d.combined_ratio_ttm < 1 ? "pos" : "neg"), "combined_ratio_ttm"));

@@ -26,10 +26,16 @@ test('timestamps are explicit and unknown dates are never invented',()=>{
  assert.match(date('2026-11-05T22:22:00Z'),/01:22.*TSİ/);
 });
 test('source A/D markers, negative equity in summary, tiny revenue and prior-year loss',()=>{
- assert.equal(reason({ev_ebitda:null,source_na:['ev_ebitda'],operating_ttm:-5},'ev_ebitda'),'Negatif FAVÖK nedeniyle anlamlı değil');
+ assert.equal(reason({ev_ebitda:null,source_na:['ev_ebitda'],operating_ttm:-5},'ev_ebitda'),'Kaynakta anlamlı değil (A/D); şirket esas faaliyetten zararda');
  assert.equal(reason({nd_ebitda:null,source_na:['ev_ebitda'],operating_ttm:5},'nd_ebitda'),'Kaynakta anlamlı değil (A/D)');
  assert.equal(reason({pb:null,equity:-3},'pb'),'Negatif özkaynak nedeniyle anlamlı değil');
- assert.equal(reason({op_margin_ttm:null,revenue_ttm:1,operating_ttm:-50},'op_margin_ttm'),'Satış çok düşük; marj anlamlı değil');
+ assert.equal(reason({op_margin_ttm:null,revenue_ttm:1,operating_ttm:-50},'op_margin_ttm'),'Kâr/zarar satışın 10 katını aşıyor; marj anlamlı değil');
+ assert.equal(reason({op_margin_ttm:null,revenue_ttm:100,operating_ttm:5},'op_margin_ttm'),'Veri yok');
+ assert.equal(reason({op_margin_ttm:null,revenue_ttm:-3},'op_margin_ttm'),'Satış sıfır veya negatif; marj hesaplanmaz');
  assert.equal(reason({op_margin_ttm:null},'op_margin_ttm'),'Veri yok');
  assert.equal(reason({peg:null,pe:8,net_ttm:10,net_ttm_prev:-2},'peg'),'Geçen yıl zarar; büyüme ve PEG hesaplanamaz');
+});
+test('gaps in the last four quarters are named, not hidden', ()=>{
+ assert.equal(reason({net_ttm:null,pe:null,last_period:'2026Q3',missing_periods:['2025Q4']},'pe'),'Son 4 çeyrek kesintisiz değil (kaynakta eksik: 2025/12); 12 aylık değer hesaplanmadı');
+ assert.equal(reason({kind:'sigorta',ins_type:'hayat_disi',roe:null,last_period:'2026Q3',missing_periods:['2026Q2','2025Q4']},'roe'),'Son 4 çeyrek kesintisiz değil (kaynakta eksik: 2026/6, 2025/12); 12 aylık değer hesaplanmadı');
 });

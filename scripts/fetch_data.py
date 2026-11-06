@@ -199,11 +199,25 @@ def yoy_consistency(single: dict[str, float | None], cols_desc: list[str]) -> fl
     return (sum((x - mu) ** 2 for x in g) / len(g)) ** .5
 
 
-def ttm(single: dict[str, float | None], cols_desc: list[str]) -> float | None:
-    vals = [single.get(c) for c in cols_desc[:4]]
-    if len(vals) < 4 or any(v is None for v in vals):
+def shift_q(col: str, k: int) -> str:
+    """'2026Q3', -1 -> '2026Q2'"""
+    y, q = period_key(col)
+    i = y * 4 + (q - 1) + k
+    return f"{i // 4}Q{i % 4 + 1}"
+
+
+def ttm_at(single: dict[str, float | None], end: str | None) -> float | None:
+    """'end' ile biten KESİNTİSİZ 4 çeyreğin toplamı; biri eksikse None."""
+    if not end:
+        return None
+    vals = [single.get(shift_q(end, -i)) for i in range(4)]
+    if any(v is None for v in vals):
         return None
     return sum(vals)
+
+
+def ttm(single: dict[str, float | None], cols_desc: list[str]) -> float | None:
+    return ttm_at(single, cols_desc[0]) if cols_desc else None
 
 
 def ratio(a, b):
@@ -340,7 +354,7 @@ def insurance_metrics(inc, cols_all: list[str], cols: list[str], equity: dict) -
         return None
     single = {k: to_single_quarters({c: v.get(c) for c in cols_all}) for k, v in rows.items()}
     T = {k: ttm(v, cols_all) for k, v in single.items()}
-    Tp = {k: ttm(v, cols_all[4:]) for k, v in single.items()}
+    Tp = {k: ttm_at(v, shift_q(cols_all[0], -4)) for k, v in single.items()}
     gwp = (T.get("gwp_nl") or 0) + (T.get("gwp_life") or 0) if T.get("gwp_nl") is not None else None
     gwp_prev = (Tp.get("gwp_nl") or 0) + (Tp.get("gwp_life") or 0) if Tp.get("gwp_nl") is not None else None
     nonlife_share = (T["gwp_nl"] / gwp) if gwp else None
@@ -489,8 +503,21 @@ def process(symbol: str, name: str = "") -> dict | None:
             return sum(1 for c in cols_all[:QUARTERS] if single.get(c) is not None and single[c] < -0.01 * mx)
         method = "usd" if (s_t is not None and s_u is not None and s_u < 0.5 * s_t
                            and negs(variants["usd"]["revenue"]) <= negs(variants["tms29"]["revenue"])) else "tms29"
-    series = variants[method]
+    series = {k: dict(v) for k, v in variants[method].items()}
     use_adj = method == "tms29"   # reel (tek paraya çevrilmiş) mi?
+
+    # Negatif tek çeyrek satış, sanayi şirketinde gerçek bir sonuç olamaz; genellikle
+    # kaynaktaki dönemlerin farklı bazlarda tutulmasından doğar. O çeyreği gösterme.
+    suspect = []
+    if group != "UFRS":
+        for c in cols_all[:QUARTERS]:
+            r = series["revenue"].get(c)
+            if r is not None and r < 0:
+                suspect.append(c)
+                for k in series:
+                    series[k][c] = None
+    expected = [shift_q(cols_all[0], -i) for i in range(8)]
+    missing = [c for c in expected if c not in available]
 
     cols = cols_all[:QUARTERS]
 
@@ -556,8 +583,11 @@ def process(symbol: str, name: str = "") -> dict | None:
     # Kendi hesabımız (kaynak oranı yoksa yedek)
     pe_calc = ratio(mcap, net_ttm) if net_ttm and net_ttm > 0 else None
     pb_calc = ratio(mcap, last_equity) if last_equity and last_equity > 0 else None
-    pe = clean(metrics.get("pe_ratio")) or pe_calc
-    pb = clean(metrics.get("pb_ratio")) or pb_calc
+    pe_src, pb_src = clean(metrics.get("pe_ratio")), clean(metrics.get("pb_ratio"))
+    # Birincil: piyasa değeri / bizim 12 aylık net kâr ve son özkaynak (kartta gösterilen
+    # rakamlarla aynı temel). Hesaplanamıyorsa kaynağın oranı.
+    pe = pe_calc if pe_calc is not None else (None if (net_ttm is not None and net_ttm <= 0) else pe_src)
+    pb = pb_calc if pb_calc is not None else (None if (last_equity is not None and last_equity <= 0) else pb_src)
 
     # FAVÖK (12 ay): İş Yatırım'ın FD/FAVÖK'ünden geri hesaplanır -> FD = piyasa değ. + net borç
     ev_ebitda = clean(metrics.get("ev_ebitda"))
@@ -567,7 +597,7 @@ def process(symbol: str, name: str = "") -> dict | None:
     nd_ebitda = net_debt / ebitda if (net_debt is not None and ebitda and ebitda > 0) else None
 
     # PEG = F/K ÷ (yıllık net kâr büyümesi, %). Büyüme: son 12 ay vs bir önceki yılın 12 ayı.
-    net_ttm_prev = ttm(series["net_parent"], cols_all[4:])
+    net_ttm_prev = ttm_at(series["net_parent"], shift_q(cols[0], -4))
     growth = None
     if net_ttm is not None and net_ttm_prev and net_ttm_prev > 0:
         growth = net_ttm / net_ttm_prev - 1
@@ -588,6 +618,12 @@ def process(symbol: str, name: str = "") -> dict | None:
         "market_cap": mcap,
         "pe": pe,
         "pb": pb,
+        "pe_src": pe_src,       # İş Yatırım cari F/K (farklı kâr tanımı/enflasyon bazı olabilir)
+        "pb_src": pb_src,
+        "pe_basis": "calc" if pe_calc is not None else ("src" if pe is not None else None),
+        "pb_basis": "calc" if pb_calc is not None else ("src" if pb is not None else None),
+        "ttm_gap": rev_ttm is None and net_ttm is None and any(series["revenue"].get(c) is not None for c in cols[:4]),
+        "missing_periods": missing,
         "ev_ebitda": ev_ebitda,
         "net_debt": net_debt,
         "ebitda_ttm": ebitda,
@@ -609,6 +645,11 @@ def process(symbol: str, name: str = "") -> dict | None:
         summary.update(ins)
         if summary.get("net_ttm") is None:
             summary["net_ttm"] = ins.get("net_ttm_ins")
+            n = summary["net_ttm"]
+            if n is not None and n > 0 and mcap:       # F/K'yı gösterilen net kârla tutarlı yap
+                summary["pe"], summary["pe_basis"] = mcap / n, "calc"
+            elif n is not None and n <= 0:
+                summary["pe"], summary["pe_basis"] = None, None
     detail = {
         **summary,
         "quarters": quarters,
@@ -617,6 +658,7 @@ def process(symbol: str, name: str = "") -> dict | None:
         "balance_sheet": df_to_table(bal[[c for c in cols if c in bal.columns]]) if bal is not None and not bal.empty else None,
         "income_is_cumulative": INCOME_IS_CUMULATIVE,
         "inflation_adjusted": use_adj,
+        "suspect_periods": suspect,
         "adjust_method": method,
         "money_base": base if use_adj else None,
     }
