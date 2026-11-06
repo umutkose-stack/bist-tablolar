@@ -1,0 +1,2403 @@
+{
+ "generated_at": "2026-11-06T08:01+00:00",
+ "model": "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+ "sectors": [
+  {
+   "sector": "Gıda",
+   "count": 50,
+   "context": "Sektör: Gıda. Şirketler: Armada Gida, Kiler Holding, Ulker Biskuvi, Efor Yatirim, Cem Zeytin, Banvit, Dmr Unlu Mamuller, Oba Makarnacilik, Balsu Gida, Tukas, Akhan Un, Kayseri Seker Fabrikasi, Yayla Gida, Meysu Gida, Besler Gida"
+  },
+  {
+   "sector": "GYO",
+   "count": 37,
+   "context": "Sektör: GYO. Şirketler: Reysas Gmyo, Torunlar Gmyo, Ziraat Gmyo, Emlak Konut Gmyo, Yeni Gimat Gmyo, Akis Gmyo, Is Gmyo, Ozak Gmyo, Halk Gmyo, Sinpas Gmyo, Panora Gmyo, Pasifik Gmyo, Akfen Gmyo, Dogus Gmyo, Akmerkez Gmyo"
+  },
+  {
+   "sector": "Gayrimenkul",
+   "count": 24,
+   "context": "Sektör: Gayrimenkul. Şirketler: Ronesans Gayrimenkul Yat., Avrupakent Gmyo, Koray Gmyo, Asce Gmyo, Dap Gayrimenkul, Agaoglu Gmyo, Ahes Gmyo, Kuyas Yatirim, Marmara Holding, Turker Proje Gayrimenkul, Zeray Gmyo, Egeyapi Avrupa Gmyo, Mhr Gmyo, Bakirci Gmyo, Z Gmyo"
+  },
+  {
+   "sector": "Holding",
+   "count": 21,
+   "context": "Sektör: Holding. Şirketler: Koc Holding, Sabanci Holding, Investco Holding, Tekfen Holding, Anadolu Grubu Holding, Dogan Holding, Alarko Holding, Global Yat. Holding, Adra Gmyo, Hedef Holding, Net Holding, Eczacibasi Yatirim, Polisan Holding, Oyak Yatirim Menkul, Bera Holding"
+  },
+  {
+   "sector": "Demir Çelik",
+   "count": 19,
+   "context": "Sektör: Demir Çelik. Şirketler: Eregli Demir Celik, Iskenderun Demir Celik, Borusan Boru Sanayi, Kardemir (D), Kardemir Celik, Kocaer Celik, Celik Halat, Izmir Demir Celik, Kardemir (A), Ekinciler Demir Celik, Kardemir (B), Koc Metalurji, Bursa Cimento, Cemtas, Erciyas Celik Boru"
+  },
+  {
+   "sector": "Yenilenebilir Enerji",
+   "count": 19,
+   "context": "Sektör: Yenilenebilir Enerji. Şirketler: Akfen Yen. Enerji, Mogan Enerji, Yeo Teknoloji Enerji, Ic Enterra Yen. Enerji, Aydem Enerji, Margun Enerji, Metgun Enerji, Ecogreen Enerji, Galata Wind Enerji, Izdemir Enerji, Alfa Solar Enerji, Lydia Holding, Tatlipinar Enerji Uretim, Hun Yenilenebilir Enerji, Best Brands Enerji"
+  },
+  {
+   "sector": "Çimento ve Yapı Malz.",
+   "count": 19,
+   "context": "Sektör: Çimento ve Yapı Malz.. Şirketler: Oyak Cimento, Cimsa, Akcansa, Nuh Cimento, Konya Cimento, Limak Dogu Anadolu, Baticim Bati Anadolu, Baticim Cimento, Albayrak Beton Sanayi, Bogazici Beton Sanayi, Afyon Cimento, Bien Yapi Urunleri, Goltas Cimento, Qua Granite Hayal Yapi, Visne Madencilik"
+  },
+  {
+   "sector": "Tekstil",
+   "count": 17,
+   "context": "Sektör: Tekstil. Şirketler: Sasa Polyester, Aksa, Kordsa Teknik Tekstil, Sonmez Filament, Bossa, Arsan Holding, Koza Polyester, Sanko Pazarlama, Yunsa, Isbir Sentetik Dokuma, Bilici Yatirim, Luks Kadife, Rubenis Tekstil, Karsu Tekstil, Soktas"
+  },
+  {
+   "sector": "Elektrik",
+   "count": 16,
+   "context": "Sektör: Elektrik. Şirketler: Enerjisa Enerji, Aksa Enerji, Turker Vangolu Enerji, Dogu Aras Enerji, Turcas Holding, Can2 Termik, Zorlu Enerji, Ayen Enerji, Odas Elektrik, Biotrend Cevre Ve Enerji, Akenerji, Cates Elektrik, Esenboga Elektrik, Birlesim Grup Enerji, Pamel Elektrik"
+  },
+  {
+   "sector": "Sağlık",
+   "count": 14,
+   "context": "Sektör: Sağlık. Şirketler: Mlp Saglik, Selcuk Ecza Deposu, Eczacibasi Ilac, Orzaks Ilac, Gen Ilac, Deva Holding, Tapdi Tinaztepe, Lokman Hekim Saglik, Nasmed Egepol, Oncosem Onkolojik Sistemler, Meditera Tibbi Malzeme, Anatolia Tani Ve Biyoteknoloji, Rta Laboratuvarlari, Seyitler Kimya"
+  },
+  {
+   "sector": "Elektrikli Ürünler",
+   "count": 13,
+   "context": "Sektör: Elektrikli Ürünler. Şirketler: Astor Enerji, Europower Enerji, Kalyon Gunes Teknolojileri, Beta Enerji Ve Teknoloji, Sarkuysan, Sa-Ra Enerji, Ulusoy Elektrik, Gersan Elektrik, Yigit Aku, Turk Prysmian Kablo, Ekos Teknoloji, Say Yenilenebilir Enerji, Sanel Muhendislik"
+  },
+  {
+   "sector": "Yazılım",
+   "count": 13,
+   "context": "Sektör: Yazılım. Şirketler: Atp Yazilim, Ard Bilisim Teknolojileri, Netcad Yazilim, Hitit Bilgisayar, Odine Teknoloji, Forte Bilgi Iletisim, 1000 Yatirimlar Hol., Fonet Bilgi Teknolojileri, Agrotech Teknoloji, Vbt Yazilim, Kafein Yazilim, Obase Bilgisayar, Smartiks Yazilim"
+  },
+  {
+   "sector": "Hazır Giyim",
+   "count": 12,
+   "context": "Sektör: Hazır Giyim. Şirketler: Mavi Giyim, Vakko Tekstil, Koton Magazacilik, Sun Tekstil, Desa Deri, Dagi Giyim, Menderes Tekstil, Suwen Tekstil, Derluks Yatirim Holding, Derimod, Bayrak Taban Sanayi, Rodrigo Tekstil"
+  },
+  {
+   "sector": "Ambalaj",
+   "count": 11,
+   "context": "Sektör: Ambalaj. Şirketler: Kartonsan, Mondi Turkey, Isiklar Enerji Yapi Hol., Duran Dogan Basim, Konya Kagit, Kaplamin, Bak Ambalaj, Bantas Ambalaj, Ozerden Ambalaj, Sekuro Plastik, Berkosan Yalitim"
+  },
+  {
+   "sector": "Banka",
+   "count": 11,
+   "context": "Sektör: Banka. Şirketler: Garanti Bankasi, Akbank, Is Bankasi (C), Vakiflar Bankasi, Yapi Ve Kredi Bank., T. Halk Bankasi, Albaraka Turk, Sekerbank, Icbc Turkey Bank, Is Bankasi (B), Is Bankasi (A)"
+  },
+  {
+   "sector": "Makine",
+   "count": 11,
+   "context": "Sektör: Makine. Şirketler: Dof Robotik, Safkar Ege Sogutmacilik, Burcelik Vana, Klimasan Klima, Hidropar Hareket Kontrol, Meka Global Makine, Imas Makina, Sanica Isi Sanayi, Makina Takim, Emek Elektrik, Manas Enerji Yonetimi"
+  },
+  {
+   "sector": "Portföy Yönetimi",
+   "count": 11,
+   "context": "Sektör: Portföy Yönetimi. Şirketler: Verusa Holding, Inveo Yatirim Holding, A1 Capital Yatirim, Osmanli Menkul, Unlu Yatirim Holding, Hedef Girisim, Guler Yat. Holding, Denge Holding, Pardus Girisim, Hub Girisim, Icu Girisim"
+  },
+  {
+   "sector": "İnşaat ve Taahhüt",
+   "count": 10,
+   "context": "Sektör: İnşaat ve Taahhüt. Şirketler: Enka Insaat, Akfen Insaat, Gulermak Agir Sanayi, Masfen Enerji, Orge Enerji Elektrik, Ucay Muhendislik, Naturel Enerji, Anel Elektrik, Nigbas Nigde Beton, Yayla En. Ur. Tur. Ve Ins"
+  },
+  {
+   "sector": "Bilişim",
+   "count": 9,
+   "context": "Sektör: Bilişim. Şirketler: Mia Teknoloji, Logo Yazilim, Pasifik Teknoloji, Netas Telekom., Reeder Teknoloji, Link Bilgisayar, Onur Teknoloji, Matriks Finansal Teknolojiler, Makim Makine"
+  },
+  {
+   "sector": "Endüstriyel Ürünler",
+   "count": 9,
+   "context": "Sektör: Endüstriyel Ürünler. Şirketler: Ege Profil, Marshall, Bahadir Kimya, Kapeks Kimya, Dyo Boya, Dinamik Isi Makina Yalitim, Mercan Kimya, Sanifoam Endustri, Gediz Ambalaj"
+  },
+  {
+   "sector": "Turizm",
+   "count": 9,
+   "context": "Sektör: Turizm. Şirketler: Altinyunus Cesme, Marmaris Altinyunus, Blume Metal Kimya, Merit Turizm, Petrokent Turizm, Marti Otel, Tek-Art Turizm, Avrasya Petrol Ve Tur., Ulaslar Turizm Yat."
+  },
+  {
+   "sector": "İmalat",
+   "count": 9,
+   "context": "Sektör: İmalat. Şirketler: Kuzey Boru, Teknika Plastik, Isik Plastik, Formul Plastik Ve Metal, Net Global Endustriyel Yat., Izmir Firca, Rainbow Polikarbonat, Egeplast, Mazhar Zorlu Holding"
+  },
+  {
+   "sector": "Elektronik Dağıtım",
+   "count": 8,
+   "context": "Sektör: Elektronik Dağıtım. Şirketler: Mobiltel Iletisim, Indeks Bilgisayar, Ingram Bilisim, Penta Teknoloji Urunleri Dagitim, Aztek Teknoloji, Datagate Bilgisayar, Arena Bilgisayar, Despec Bilgisayar"
+  },
+  {
+   "sector": "Gıda Perakende",
+   "count": 8,
+   "context": "Sektör: Gıda Perakende. Şirketler: Bim Magazalar, Migros Ticaret, Sok Marketler Ticaret, Citlekci Magazacilik Gida, Carrefoursa, Gimat Magazacilik, Kim Market-Ersan Alisveris, Bizim Magazalari"
+  },
+  {
+   "sector": "Kimya",
+   "count": 8,
+   "context": "Sektör: Kimya. Şirketler: Gubre Fabrik., Petkim, Hektas, Politeknik Metal, Kalekim Kimyevi Maddeler, Gentas Kimya, Acipayam Seluloz, Temapol Polimer Plastik"
+  },
+  {
+   "sector": "Toptan Ticaret",
+   "count": 8,
+   "context": "Sektör: Toptan Ticaret. Şirketler: Grainturk Holding, Yatas, Tgs Dis Ticaret, Dct Trading Dis Ticaret, Us Yatirim Holding, Yukselen Celik, Arzum Ev Aletleri, Cosmos Yat. Holding"
+  },
+  {
+   "sector": "Yapı Ürünleri",
+   "count": 8,
+   "context": "Sektör: Yapı Ürünleri. Şirketler: Kaleseramik, Alarko Carrier, Europen Endustri, Isvea Seramik Ve Banyo, Intema, Seranit Granit Seramik, Ege Seramik, Silverline Endustri"
+  },
+  {
+   "sector": "Aracı Kurum",
+   "count": 7,
+   "context": "Sektör: Aracı Kurum. Şirketler: Is Y. Men. Deg., T.S.K.B., Gedik Y. Men. Deg., Gozde Girisim, Seker Yatirim, Info Yatirim, Global Men. Deg."
+  },
+  {
+   "sector": "Otomotiv Yan Sanayi",
+   "count": 7,
+   "context": "Sektör: Otomotiv Yan Sanayi. Şirketler: Ege Endustri, Bosch Fren Sistemleri, Jantsa Jant Sanayi, Doktas Dokumculuk, Parsan, F-M Izmit Piston, Ditas Bdy"
+  },
+  {
+   "sector": "Sigorta",
+   "count": 7,
+   "context": "Sektör: Sigorta. Şirketler: Turkiye Sigorta, Anadolu Sigorta, Anadolu Hayat Emek., Agesa Hayat Emeklilik, Quick Sigorta, Ray Sigorta, Aksigorta"
+  },
+  {
+   "sector": "İş Makinesi ve Ticari Araç",
+   "count": 7,
+   "context": "Sektör: İş Makinesi ve Ticari Araç. Şirketler: Turk Traktor, Ozata Denizcilik, Karsan Otomotiv, Tumosan Motor Ve Traktor, Hatsan Gemi, Katmerciler Ekipman, Bulbuloglu Vinc"
+  },
+  {
+   "sector": "Finansal Kiralama",
+   "count": 6,
+   "context": "Sektör: Finansal Kiralama. Şirketler: Ekim Turizm, Ldr Turizm, Tureks Turizm Tasimacilik, Escar Filo, Ufuk Yatirim, Borlease Otomotiv"
+  },
+  {
+   "sector": "Medya ve Eğlence",
+   "count": 6,
+   "context": "Sektör: Medya ve Eğlence. Şirketler: Fenerbahce Futbol, Galatasaray Sportif, Trabzonspor Sportif, Besiktas Futbol Yat., Ceo Event Medya, Ihlas Yayin Holding"
+  },
+  {
+   "sector": "İçecek",
+   "count": 6,
+   "context": "Sektör: İçecek. Şirketler: Coca Cola Icecek, Anadolu Efes, T.Tuborg, Pinar Su, Kristal Kola, Ersu Gida"
+  },
+  {
+   "sector": "Doğalgaz",
+   "count": 5,
+   "context": "Sektör: Doğalgaz. Şirketler: Enerya Enerji, Ahlatci Dogalgaz, Aygaz, Baskent Dogalgaz Gmyo, Naturelgaz"
+  },
+  {
+   "sector": "Hizmet",
+   "count": 5,
+   "context": "Sektör: Hizmet. Şirketler: Gur-Sel Turizm Tasimacilik, Ata Turizm, Gezinomi Seyahat, Flap Kongre Toplanti Hiz., Zedur Enerji"
+  },
+  {
+   "sector": "Metal ve Maden",
+   "count": 5,
+   "context": "Sektör: Metal ve Maden. Şirketler: Cvk Maden, Mega Metal, Birlesim Muhendislik, Park Elek.Madencilik, Ruzy Madencilik Ve Enerji"
+  },
+  {
+   "sector": "Metal İşleme",
+   "count": 5,
+   "context": "Sektör: Metal İşleme. Şirketler: Kirac Galvaniz, Bms Birlesik Metal, Ozyasar Tel, Demisas Dokum, Bms Celik Hasir"
+  },
+  {
+   "sector": "Otomotiv",
+   "count": 5,
+   "context": "Sektör: Otomotiv. Şirketler: Ford Otosan, Tofas Oto. Fab., Otokar, Dogus Otomotiv, Anadolu Isuzu"
+  },
+  {
+   "sector": "Telekom",
+   "count": 5,
+   "context": "Sektör: Telekom. Şirketler: Turkcell, Turk Telekom, Karel Elektronik, Kron Teknoloji, Alcatel Lucent Teletas"
+  },
+  {
+   "sector": "Ticari Hizmetler",
+   "count": 5,
+   "context": "Sektör: Ticari Hizmetler. Şirketler: Metropal Kurumsal Hizmetler, Ihlas Haber Ajansi, E-Data Teknoloji, Skyalp Finansal Teknolojiler, Akdeniz Yatirim Holding"
+  },
+  {
+   "sector": "Beyaz Eşya ve Elektronik",
+   "count": 4,
+   "context": "Sektör: Beyaz Eşya ve Elektronik. Şirketler: Arcelik, Vestel Beyaz Esya, Vestel, Ihlas Ev Aletleri"
+  },
+  {
+   "sector": "Elektronik",
+   "count": 4,
+   "context": "Sektör: Elektronik. Şirketler: Girisim Elektrik Sanayi, Intetra Teknoloji, Empa Elektronik, Papilon Savunma"
+  },
+  {
+   "sector": "Kişisel Bakım",
+   "count": 4,
+   "context": "Sektör: Kişisel Bakım. Şirketler: Lila Kagit, Europap Tezol Kagit, Koroplast Temizlik Ambalaj, Viking Kagit"
+  },
+  {
+   "sector": "Matbaa",
+   "count": 4,
+   "context": "Sektör: Matbaa. Şirketler: Bin Ulasim Teknolojileri, Plastikkart, Prizma Press Matbaacilik, Saray Matbaacilik"
+  },
+  {
+   "sector": "Mobilya ve Ev",
+   "count": 4,
+   "context": "Sektör: Mobilya ve Ev. Şirketler: Koleksiyon Mobilya, Cagdas Cam, Kutahya Porselen, Doganlar Mobilya"
+  },
+  {
+   "sector": "Restoran",
+   "count": 4,
+   "context": "Sektör: Restoran. Şirketler: Tab Gida, Etiler Gida, Buyuk Sefler Bigchefs, Baydoner Restoranlari"
+  },
+  {
+   "sector": "Gübre ve Tarım Kimyası",
+   "count": 3,
+   "context": "Sektör: Gübre ve Tarım Kimyası. Şirketler: Ege Gubre, Tarkim Bitki Koruma, Bagfas"
+  },
+  {
+   "sector": "Perakende",
+   "count": 3,
+   "context": "Sektör: Perakende. Şirketler: Artemis Hali, Beyaz Filo, Metro Petrol Ve Tesisleri"
+  },
+  {
+   "sector": "Savunma",
+   "count": 3,
+   "context": "Sektör: Savunma. Şirketler: Aselsan, Altinay Savunma, Sdt Uzay Ve Savunma"
+  },
+  {
+   "sector": "Tüketim Ürünleri",
+   "count": 3,
+   "context": "Sektör: Tüketim Ürünleri. Şirketler: Saat Ve Saat Sanayi, Kuvva Gida, Ensari Sinai Yatirimlar"
+  },
+  {
+   "sector": "Ulaştırma",
+   "count": 3,
+   "context": "Sektör: Ulaştırma. Şirketler: Tav Havalimanlari, Celebi, Platform Turizm"
+  },
+  {
+   "sector": "Yayıncılık",
+   "count": 3,
+   "context": "Sektör: Yayıncılık. Şirketler: Hurriyet Gzt., Big Medya Teknoloji, Ihlas Gazetecilik"
+  },
+  {
+   "sector": "Altın ve Kıymetli Maden",
+   "count": 2,
+   "context": "Sektör: Altın ve Kıymetli Maden. Şirketler: Turk Altin Isletmeleri, Tr Anadolu Metal Madencilik"
+  },
+  {
+   "sector": "Alüminyum",
+   "count": 2,
+   "context": "Sektör: Alüminyum. Şirketler: Cuhadaroglu Metal, Tugcelik"
+  },
+  {
+   "sector": "Denizcilik",
+   "count": 2,
+   "context": "Sektör: Denizcilik. Şirketler: Gsd Denizcilik, Trabzon Liman"
+  },
+  {
+   "sector": "Diğer",
+   "count": 2,
+   "context": "Sektör: Diğer. Şirketler: Borusan Yat. Paz., Pasifik Holding"
+  },
+  {
+   "sector": "Girişim Sermayesi",
+   "count": 2,
+   "context": "Sektör: Girişim Sermayesi. Şirketler: Is Girisim, Verusaturk Girisim"
+  },
+  {
+   "sector": "Havacılık",
+   "count": 2,
+   "context": "Sektör: Havacılık. Şirketler: Turk Hava Yollari, Pegasus"
+  },
+  {
+   "sector": "Kargo",
+   "count": 2,
+   "context": "Sektör: Kargo. Şirketler: Reysas Lojistik, Horoz Lojistik"
+  },
+  {
+   "sector": "Kağıt",
+   "count": 2,
+   "context": "Sektör: Kağıt. Şirketler: Alkim Kagit, Alkim Kimya"
+  },
+  {
+   "sector": "Ofis Ürünleri",
+   "count": 2,
+   "context": "Sektör: Ofis Ürünleri. Şirketler: Gipta Ofis Kirtasiye, Gentas"
+  },
+  {
+   "sector": "Otomotiv Yedek Parça",
+   "count": 2,
+   "context": "Sektör: Otomotiv Yedek Parça. Şirketler: Brisa, Good-Year"
+  },
+  {
+   "sector": "Reklam",
+   "count": 2,
+   "context": "Sektör: Reklam. Şirketler: Pc Iletisim Medya, Mackolik Internet Hizmetleri"
+  },
+  {
+   "sector": "Yarı İletken",
+   "count": 2,
+   "context": "Sektör: Yarı İletken. Şirketler: Cw Enerji, Smart Gunes Enerjisi Tek."
+  },
+  {
+   "sector": "Yatırım Ortaklığı",
+   "count": 2,
+   "context": "Sektör: Yatırım Ortaklığı. Şirketler: Ostim Endustriyel Yat, Yesil Yatirim Holding"
+  },
+  {
+   "sector": "Cam",
+   "count": 1,
+   "context": "Sektör: Cam. Şirketler: Sise Cam"
+  },
+  {
+   "sector": "Demiryolu",
+   "count": 1,
+   "context": "Sektör: Demiryolu. Şirketler: Pasifik Eurasia Lojistik"
+  },
+  {
+   "sector": "Donanım",
+   "count": 1,
+   "context": "Sektör: Donanım. Şirketler: Escort Teknoloji"
+  },
+  {
+   "sector": "Elektronik Perakende",
+   "count": 1,
+   "context": "Sektör: Elektronik Perakende. Şirketler: Teknosa Ic Ve Dis Ticaret"
+  },
+  {
+   "sector": "Eğlence Ürünleri",
+   "count": 1,
+   "context": "Sektör: Eğlence Ürünleri. Şirketler: Adel Kalemcilik"
+  },
+  {
+   "sector": "Giyim Perakende",
+   "count": 1,
+   "context": "Sektör: Giyim Perakende. Şirketler: Ebebek Magazacilik"
+  },
+  {
+   "sector": "Gıda Dağıtım",
+   "count": 1,
+   "context": "Sektör: Gıda Dağıtım. Şirketler: Vanet Gida"
+  },
+  {
+   "sector": "Kara Taşımacılığı",
+   "count": 1,
+   "context": "Sektör: Kara Taşımacılığı. Şirketler: Hareket Proje Tasimaciligi"
+  },
+  {
+   "sector": "Konut İnşaatı",
+   "count": 1,
+   "context": "Sektör: Konut İnşaatı. Şirketler: Fuzul Gmyo"
+  },
+  {
+   "sector": "Mağazacılık",
+   "count": 1,
+   "context": "Sektör: Mağazacılık. Şirketler: Mopas Marketcilik"
+  },
+  {
+   "sector": "Orman Ürünleri",
+   "count": 1,
+   "context": "Sektör: Orman Ürünleri. Şirketler: Formet Metal Ve Cam"
+  },
+  {
+   "sector": "Petrol",
+   "count": 1,
+   "context": "Sektör: Petrol. Şirketler: Tr Dogal Enerji"
+  },
+  {
+   "sector": "Rafineri",
+   "count": 1,
+   "context": "Sektör: Rafineri. Şirketler: Tupras"
+  }
+ ],
+ "top_pairs": [
+  {
+   "a": "Elektronik",
+   "b": "Elektronik Perakende",
+   "na": 4,
+   "nb": 1,
+   "label": 0.959,
+   "context": 0.816,
+   "score": 0.887
+  },
+  {
+   "a": "Elektronik Dağıtım",
+   "b": "Elektronik Perakende",
+   "na": 8,
+   "nb": 1,
+   "label": 0.965,
+   "context": 0.804,
+   "score": 0.885
+  },
+  {
+   "a": "Elektrik",
+   "b": "Elektrikli Ürünler",
+   "na": 16,
+   "nb": 13,
+   "label": 0.837,
+   "context": 0.909,
+   "score": 0.873
+  },
+  {
+   "a": "Gıda",
+   "b": "Gıda Perakende",
+   "na": 50,
+   "nb": 8,
+   "label": 0.882,
+   "context": 0.857,
+   "score": 0.87
+  },
+  {
+   "a": "Elektronik Dağıtım",
+   "b": "Elektronik",
+   "na": 8,
+   "nb": 4,
+   "label": 0.957,
+   "context": 0.749,
+   "score": 0.853
+  },
+  {
+   "a": "Gıda Perakende",
+   "b": "Gıda Dağıtım",
+   "na": 8,
+   "nb": 1,
+   "label": 0.907,
+   "context": 0.767,
+   "score": 0.837
+  },
+  {
+   "a": "Metal ve Maden",
+   "b": "Metal İşleme",
+   "na": 5,
+   "nb": 5,
+   "label": 0.896,
+   "context": 0.773,
+   "score": 0.835
+  },
+  {
+   "a": "İmalat",
+   "b": "Perakende",
+   "na": 9,
+   "nb": 3,
+   "label": 0.889,
+   "context": 0.752,
+   "score": 0.82
+  },
+  {
+   "a": "Endüstriyel Ürünler",
+   "b": "Yapı Ürünleri",
+   "na": 9,
+   "nb": 8,
+   "label": 0.793,
+   "context": 0.836,
+   "score": 0.814
+  },
+  {
+   "a": "Beyaz Eşya ve Elektronik",
+   "b": "Elektronik Perakende",
+   "na": 4,
+   "nb": 1,
+   "label": 0.856,
+   "context": 0.767,
+   "score": 0.811
+  },
+  {
+   "a": "Denizcilik",
+   "b": "Donanım",
+   "na": 2,
+   "nb": 1,
+   "label": 0.854,
+   "context": 0.756,
+   "score": 0.805
+  },
+  {
+   "a": "Demir Çelik",
+   "b": "Metal İşleme",
+   "na": 19,
+   "nb": 5,
+   "label": 0.769,
+   "context": 0.827,
+   "score": 0.798
+  },
+  {
+   "a": "Hazır Giyim",
+   "b": "Giyim Perakende",
+   "na": 12,
+   "nb": 1,
+   "label": 0.84,
+   "context": 0.747,
+   "score": 0.794
+  },
+  {
+   "a": "Gıda",
+   "b": "Gıda Dağıtım",
+   "na": 50,
+   "nb": 1,
+   "label": 0.912,
+   "context": 0.669,
+   "score": 0.79
+  },
+  {
+   "a": "Gayrimenkul",
+   "b": "Aracı Kurum",
+   "na": 24,
+   "nb": 7,
+   "label": 0.881,
+   "context": 0.698,
+   "score": 0.789
+  },
+  {
+   "a": "Demir Çelik",
+   "b": "Metal ve Maden",
+   "na": 19,
+   "nb": 5,
+   "label": 0.814,
+   "context": 0.762,
+   "score": 0.788
+  },
+  {
+   "a": "Beyaz Eşya ve Elektronik",
+   "b": "Elektronik",
+   "na": 4,
+   "nb": 4,
+   "label": 0.837,
+   "context": 0.736,
+   "score": 0.786
+  },
+  {
+   "a": "Elektronik Dağıtım",
+   "b": "Beyaz Eşya ve Elektronik",
+   "na": 8,
+   "nb": 4,
+   "label": 0.845,
+   "context": 0.696,
+   "score": 0.771
+  },
+  {
+   "a": "Elektrikli Ürünler",
+   "b": "Elektronik",
+   "na": 13,
+   "nb": 4,
+   "label": 0.771,
+   "context": 0.764,
+   "score": 0.767
+  },
+  {
+   "a": "İmalat",
+   "b": "Aracı Kurum",
+   "na": 9,
+   "nb": 7,
+   "label": 0.841,
+   "context": 0.692,
+   "score": 0.767
+  },
+  {
+   "a": "Petrol",
+   "b": "Rafineri",
+   "na": 1,
+   "nb": 1,
+   "label": 0.743,
+   "context": 0.791,
+   "score": 0.767
+  },
+  {
+   "a": "Ulaştırma",
+   "b": "Denizcilik",
+   "na": 3,
+   "nb": 2,
+   "label": 0.804,
+   "context": 0.724,
+   "score": 0.764
+  },
+  {
+   "a": "Ulaştırma",
+   "b": "Donanım",
+   "na": 3,
+   "nb": 1,
+   "label": 0.801,
+   "context": 0.725,
+   "score": 0.763
+  },
+  {
+   "a": "Endüstriyel Ürünler",
+   "b": "Tüketim Ürünleri",
+   "na": 9,
+   "nb": 3,
+   "label": 0.777,
+   "context": 0.736,
+   "score": 0.757
+  },
+  {
+   "a": "Gayrimenkul",
+   "b": "İmalat",
+   "na": 24,
+   "nb": 9,
+   "label": 0.846,
+   "context": 0.667,
+   "score": 0.756
+  },
+  {
+   "a": "İnşaat ve Taahhüt",
+   "b": "Konut İnşaatı",
+   "na": 10,
+   "nb": 1,
+   "label": 0.865,
+   "context": 0.621,
+   "score": 0.743
+  },
+  {
+   "a": "Aracı Kurum",
+   "b": "Perakende",
+   "na": 7,
+   "nb": 3,
+   "label": 0.881,
+   "context": 0.602,
+   "score": 0.741
+  },
+  {
+   "a": "Demir Çelik",
+   "b": "Çimento ve Yapı Malz.",
+   "na": 19,
+   "nb": 19,
+   "label": 0.68,
+   "context": 0.799,
+   "score": 0.74
+  },
+  {
+   "a": "Yazılım",
+   "b": "Elektronik Dağıtım",
+   "na": 13,
+   "nb": 8,
+   "label": 0.616,
+   "context": 0.865,
+   "score": 0.74
+  },
+  {
+   "a": "Gıda Perakende",
+   "b": "Tüketim Ürünleri",
+   "na": 8,
+   "nb": 3,
+   "label": 0.702,
+   "context": 0.741,
+   "score": 0.722
+  },
+  {
+   "a": "Ambalaj",
+   "b": "Aracı Kurum",
+   "na": 11,
+   "nb": 7,
+   "label": 0.748,
+   "context": 0.687,
+   "score": 0.717
+  },
+  {
+   "a": "Ulaştırma",
+   "b": "Havacılık",
+   "na": 3,
+   "nb": 2,
+   "label": 0.645,
+   "context": 0.788,
+   "score": 0.716
+  },
+  {
+   "a": "Tekstil",
+   "b": "Hazır Giyim",
+   "na": 17,
+   "nb": 12,
+   "label": 0.555,
+   "context": 0.872,
+   "score": 0.714
+  },
+  {
+   "a": "Perakende",
+   "b": "Diğer",
+   "na": 3,
+   "nb": 2,
+   "label": 0.766,
+   "context": 0.662,
+   "score": 0.714
+  },
+  {
+   "a": "Metal ve Maden",
+   "b": "Altın ve Kıymetli Maden",
+   "na": 5,
+   "nb": 2,
+   "label": 0.697,
+   "context": 0.729,
+   "score": 0.713
+  },
+  {
+   "a": "Ulaştırma",
+   "b": "Kargo",
+   "na": 3,
+   "nb": 2,
+   "label": 0.693,
+   "context": 0.733,
+   "score": 0.713
+  },
+  {
+   "a": "Ambalaj",
+   "b": "İmalat",
+   "na": 11,
+   "nb": 9,
+   "label": 0.686,
+   "context": 0.737,
+   "score": 0.711
+  },
+  {
+   "a": "Yenilenebilir Enerji",
+   "b": "Elektrik",
+   "na": 19,
+   "nb": 16,
+   "label": 0.555,
+   "context": 0.864,
+   "score": 0.71
+  },
+  {
+   "a": "Tüketim Ürünleri",
+   "b": "Eğlence Ürünleri",
+   "na": 3,
+   "nb": 1,
+   "label": 0.73,
+   "context": 0.69,
+   "score": 0.71
+  },
+  {
+   "a": "Gayrimenkul",
+   "b": "Perakende",
+   "na": 24,
+   "nb": 3,
+   "label": 0.841,
+   "context": 0.57,
+   "score": 0.706
+  },
+  {
+   "a": "Gıda Perakende",
+   "b": "Restoran",
+   "na": 8,
+   "nb": 4,
+   "label": 0.634,
+   "context": 0.773,
+   "score": 0.703
+  },
+  {
+   "a": "Elektrikli Ürünler",
+   "b": "Beyaz Eşya ve Elektronik",
+   "na": 13,
+   "nb": 4,
+   "label": 0.71,
+   "context": 0.692,
+   "score": 0.701
+  },
+  {
+   "a": "Aracı Kurum",
+   "b": "Kargo",
+   "na": 7,
+   "nb": 2,
+   "label": 0.783,
+   "context": 0.62,
+   "score": 0.701
+  },
+  {
+   "a": "Perakende",
+   "b": "Ulaştırma",
+   "na": 3,
+   "nb": 3,
+   "label": 0.732,
+   "context": 0.67,
+   "score": 0.701
+  },
+  {
+   "a": "Otomotiv Yan Sanayi",
+   "b": "İş Makinesi ve Ticari Araç",
+   "na": 7,
+   "nb": 7,
+   "label": 0.602,
+   "context": 0.796,
+   "score": 0.699
+  },
+  {
+   "a": "Otomotiv",
+   "b": "Otomotiv Yedek Parça",
+   "na": 5,
+   "nb": 2,
+   "label": 0.762,
+   "context": 0.637,
+   "score": 0.699
+  },
+  {
+   "a": "Gayrimenkul",
+   "b": "Ambalaj",
+   "na": 24,
+   "nb": 11,
+   "label": 0.679,
+   "context": 0.717,
+   "score": 0.698
+  },
+  {
+   "a": "Kargo",
+   "b": "Donanım",
+   "na": 2,
+   "nb": 1,
+   "label": 0.605,
+   "context": 0.792,
+   "score": 0.698
+  },
+  {
+   "a": "Elektrikli Ürünler",
+   "b": "Elektronik Perakende",
+   "na": 13,
+   "nb": 1,
+   "label": 0.757,
+   "context": 0.637,
+   "score": 0.697
+  },
+  {
+   "a": "Otomotiv Yan Sanayi",
+   "b": "Otomotiv",
+   "na": 7,
+   "nb": 5,
+   "label": 0.687,
+   "context": 0.707,
+   "score": 0.697
+  },
+  {
+   "a": "Hizmet",
+   "b": "Ticari Hizmetler",
+   "na": 5,
+   "nb": 5,
+   "label": 0.685,
+   "context": 0.71,
+   "score": 0.697
+  },
+  {
+   "a": "Makine",
+   "b": "İş Makinesi ve Ticari Araç",
+   "na": 11,
+   "nb": 7,
+   "label": 0.647,
+   "context": 0.741,
+   "score": 0.694
+  },
+  {
+   "a": "Toptan Ticaret",
+   "b": "Yatırım Ortaklığı",
+   "na": 8,
+   "nb": 2,
+   "label": 0.581,
+   "context": 0.808,
+   "score": 0.694
+  },
+  {
+   "a": "Otomotiv Yan Sanayi",
+   "b": "Otomotiv Yedek Parça",
+   "na": 7,
+   "nb": 2,
+   "label": 0.671,
+   "context": 0.715,
+   "score": 0.693
+  },
+  {
+   "a": "İş Makinesi ve Ticari Araç",
+   "b": "Ticari Hizmetler",
+   "na": 7,
+   "nb": 5,
+   "label": 0.67,
+   "context": 0.716,
+   "score": 0.693
+  },
+  {
+   "a": "Perakende",
+   "b": "Kargo",
+   "na": 3,
+   "nb": 2,
+   "label": 0.667,
+   "context": 0.719,
+   "score": 0.693
+  },
+  {
+   "a": "İmalat",
+   "b": "Yarı İletken",
+   "na": 9,
+   "nb": 2,
+   "label": 0.822,
+   "context": 0.562,
+   "score": 0.692
+  },
+  {
+   "a": "Endüstriyel Ürünler",
+   "b": "İş Makinesi ve Ticari Araç",
+   "na": 9,
+   "nb": 7,
+   "label": 0.663,
+   "context": 0.719,
+   "score": 0.691
+  },
+  {
+   "a": "Çimento ve Yapı Malz.",
+   "b": "Metal İşleme",
+   "na": 19,
+   "nb": 5,
+   "label": 0.666,
+   "context": 0.711,
+   "score": 0.688
+  },
+  {
+   "a": "Turizm",
+   "b": "Ulaştırma",
+   "na": 9,
+   "nb": 3,
+   "label": 0.602,
+   "context": 0.774,
+   "score": 0.688
+  },
+  {
+   "a": "Aracı Kurum",
+   "b": "Ulaştırma",
+   "na": 7,
+   "nb": 3,
+   "label": 0.767,
+   "context": 0.607,
+   "score": 0.687
+  },
+  {
+   "a": "Çimento ve Yapı Malz.",
+   "b": "Yapı Ürünleri",
+   "na": 19,
+   "nb": 8,
+   "label": 0.687,
+   "context": 0.684,
+   "score": 0.686
+  },
+  {
+   "a": "Tekstil",
+   "b": "Giyim Perakende",
+   "na": 17,
+   "nb": 1,
+   "label": 0.705,
+   "context": 0.663,
+   "score": 0.684
+  },
+  {
+   "a": "Endüstriyel Ürünler",
+   "b": "Metal İşleme",
+   "na": 9,
+   "nb": 5,
+   "label": 0.609,
+   "context": 0.759,
+   "score": 0.684
+  },
+  {
+   "a": "İnşaat ve Taahhüt",
+   "b": "Yapı Ürünleri",
+   "na": 10,
+   "nb": 8,
+   "label": 0.703,
+   "context": 0.661,
+   "score": 0.682
+  },
+  {
+   "a": "Makine",
+   "b": "Otomotiv",
+   "na": 11,
+   "nb": 5,
+   "label": 0.745,
+   "context": 0.617,
+   "score": 0.681
+  },
+  {
+   "a": "İmalat",
+   "b": "Diğer",
+   "na": 9,
+   "nb": 2,
+   "label": 0.731,
+   "context": 0.63,
+   "score": 0.681
+  },
+  {
+   "a": "Perakende",
+   "b": "Yarı İletken",
+   "na": 3,
+   "nb": 2,
+   "label": 0.804,
+   "context": 0.557,
+   "score": 0.681
+  },
+  {
+   "a": "Elektrik",
+   "b": "Elektronik",
+   "na": 16,
+   "nb": 4,
+   "label": 0.67,
+   "context": 0.691,
+   "score": 0.68
+  },
+  {
+   "a": "Metal ve Maden",
+   "b": "Alüminyum",
+   "na": 5,
+   "nb": 2,
+   "label": 0.65,
+   "context": 0.71,
+   "score": 0.68
+  },
+  {
+   "a": "Aracı Kurum",
+   "b": "Yarı İletken",
+   "na": 7,
+   "nb": 2,
+   "label": 0.851,
+   "context": 0.505,
+   "score": 0.678
+  },
+  {
+   "a": "Elektrikli Ürünler",
+   "b": "Elektronik Dağıtım",
+   "na": 13,
+   "nb": 8,
+   "label": 0.721,
+   "context": 0.633,
+   "score": 0.677
+  },
+  {
+   "a": "Toptan Ticaret",
+   "b": "İş Makinesi ve Ticari Araç",
+   "na": 8,
+   "nb": 7,
+   "label": 0.611,
+   "context": 0.742,
+   "score": 0.677
+  },
+  {
+   "a": "İmalat",
+   "b": "Ulaştırma",
+   "na": 9,
+   "nb": 3,
+   "label": 0.74,
+   "context": 0.612,
+   "score": 0.676
+  },
+  {
+   "a": "Yapı Ürünleri",
+   "b": "Metal İşleme",
+   "na": 8,
+   "nb": 5,
+   "label": 0.635,
+   "context": 0.717,
+   "score": 0.676
+  },
+  {
+   "a": "Elektrikli Ürünler",
+   "b": "Endüstriyel Ürünler",
+   "na": 13,
+   "nb": 9,
+   "label": 0.649,
+   "context": 0.699,
+   "score": 0.674
+  },
+  {
+   "a": "Finansal Kiralama",
+   "b": "Yatırım Ortaklığı",
+   "na": 6,
+   "nb": 2,
+   "label": 0.607,
+   "context": 0.739,
+   "score": 0.673
+  },
+  {
+   "a": "Yazılım",
+   "b": "Elektronik Perakende",
+   "na": 13,
+   "nb": 1,
+   "label": 0.597,
+   "context": 0.742,
+   "score": 0.67
+  },
+  {
+   "a": "Gıda",
+   "b": "Restoran",
+   "na": 50,
+   "nb": 4,
+   "label": 0.562,
+   "context": 0.776,
+   "score": 0.669
+  },
+  {
+   "a": "Doğalgaz",
+   "b": "Petrol",
+   "na": 5,
+   "nb": 1,
+   "label": 0.623,
+   "context": 0.715,
+   "score": 0.669
+  }
+ ],
+ "nearest": {
+  "Gıda": [
+   {
+    "sector": "Gıda Perakende",
+    "score": 0.87
+   },
+   {
+    "sector": "Gıda Dağıtım",
+    "score": 0.79
+   },
+   {
+    "sector": "Restoran",
+    "score": 0.669
+   }
+  ],
+  "GYO": [
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.649
+   },
+   {
+    "sector": "Kimya",
+    "score": 0.58
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.541
+   }
+  ],
+  "Gayrimenkul": [
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.789
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.756
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.706
+   }
+  ],
+  "Holding": [
+   {
+    "sector": "İmalat",
+    "score": 0.599
+   },
+   {
+    "sector": "Portföy Yönetimi",
+    "score": 0.592
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.586
+   }
+  ],
+  "Demir Çelik": [
+   {
+    "sector": "Metal İşleme",
+    "score": 0.798
+   },
+   {
+    "sector": "Metal ve Maden",
+    "score": 0.788
+   },
+   {
+    "sector": "Çimento ve Yapı Malz.",
+    "score": 0.74
+   }
+  ],
+  "Yenilenebilir Enerji": [
+   {
+    "sector": "Elektrik",
+    "score": 0.71
+   },
+   {
+    "sector": "Elektrikli Ürünler",
+    "score": 0.665
+   },
+   {
+    "sector": "Doğalgaz",
+    "score": 0.586
+   }
+  ],
+  "Çimento ve Yapı Malz.": [
+   {
+    "sector": "Demir Çelik",
+    "score": 0.74
+   },
+   {
+    "sector": "Metal İşleme",
+    "score": 0.688
+   },
+   {
+    "sector": "Yapı Ürünleri",
+    "score": 0.686
+   }
+  ],
+  "Tekstil": [
+   {
+    "sector": "Hazır Giyim",
+    "score": 0.714
+   },
+   {
+    "sector": "Giyim Perakende",
+    "score": 0.684
+   },
+   {
+    "sector": "Ambalaj",
+    "score": 0.65
+   }
+  ],
+  "Elektrik": [
+   {
+    "sector": "Elektrikli Ürünler",
+    "score": 0.873
+   },
+   {
+    "sector": "Yenilenebilir Enerji",
+    "score": 0.71
+   },
+   {
+    "sector": "Elektronik",
+    "score": 0.68
+   }
+  ],
+  "Sağlık": [
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.578
+   },
+   {
+    "sector": "Gıda",
+    "score": 0.574
+   },
+   {
+    "sector": "Sigorta",
+    "score": 0.568
+   }
+  ],
+  "Elektrikli Ürünler": [
+   {
+    "sector": "Elektrik",
+    "score": 0.873
+   },
+   {
+    "sector": "Elektronik",
+    "score": 0.767
+   },
+   {
+    "sector": "Beyaz Eşya ve Elektronik",
+    "score": 0.701
+   }
+  ],
+  "Yazılım": [
+   {
+    "sector": "Elektronik Dağıtım",
+    "score": 0.74
+   },
+   {
+    "sector": "Elektronik Perakende",
+    "score": 0.67
+   },
+   {
+    "sector": "Elektronik",
+    "score": 0.618
+   }
+  ],
+  "Hazır Giyim": [
+   {
+    "sector": "Giyim Perakende",
+    "score": 0.794
+   },
+   {
+    "sector": "Tekstil",
+    "score": 0.714
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.587
+   }
+  ],
+  "Ambalaj": [
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.717
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.711
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.698
+   }
+  ],
+  "Banka": [
+   {
+    "sector": "Finansal Kiralama",
+    "score": 0.648
+   },
+   {
+    "sector": "Portföy Yönetimi",
+    "score": 0.542
+   },
+   {
+    "sector": "Yatırım Ortaklığı",
+    "score": 0.527
+   }
+  ],
+  "Makine": [
+   {
+    "sector": "İş Makinesi ve Ticari Araç",
+    "score": 0.694
+   },
+   {
+    "sector": "Otomotiv",
+    "score": 0.681
+   },
+   {
+    "sector": "Elektronik",
+    "score": 0.653
+   }
+  ],
+  "Portföy Yönetimi": [
+   {
+    "sector": "Yatırım Ortaklığı",
+    "score": 0.655
+   },
+   {
+    "sector": "Toptan Ticaret",
+    "score": 0.655
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.628
+   }
+  ],
+  "İnşaat ve Taahhüt": [
+   {
+    "sector": "Konut İnşaatı",
+    "score": 0.743
+   },
+   {
+    "sector": "Yapı Ürünleri",
+    "score": 0.682
+   },
+   {
+    "sector": "Çimento ve Yapı Malz.",
+    "score": 0.644
+   }
+  ],
+  "Bilişim": [
+   {
+    "sector": "İmalat",
+    "score": 0.628
+   },
+   {
+    "sector": "Elektronik Dağıtım",
+    "score": 0.595
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.592
+   }
+  ],
+  "Endüstriyel Ürünler": [
+   {
+    "sector": "Yapı Ürünleri",
+    "score": 0.814
+   },
+   {
+    "sector": "Tüketim Ürünleri",
+    "score": 0.757
+   },
+   {
+    "sector": "İş Makinesi ve Ticari Araç",
+    "score": 0.691
+   }
+  ],
+  "Turizm": [
+   {
+    "sector": "Ulaştırma",
+    "score": 0.688
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.667
+   },
+   {
+    "sector": "Ambalaj",
+    "score": 0.644
+   }
+  ],
+  "İmalat": [
+   {
+    "sector": "Perakende",
+    "score": 0.82
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.767
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.756
+   }
+  ],
+  "Elektronik Dağıtım": [
+   {
+    "sector": "Elektronik Perakende",
+    "score": 0.885
+   },
+   {
+    "sector": "Elektronik",
+    "score": 0.853
+   },
+   {
+    "sector": "Beyaz Eşya ve Elektronik",
+    "score": 0.771
+   }
+  ],
+  "Gıda Perakende": [
+   {
+    "sector": "Gıda",
+    "score": 0.87
+   },
+   {
+    "sector": "Gıda Dağıtım",
+    "score": 0.837
+   },
+   {
+    "sector": "Tüketim Ürünleri",
+    "score": 0.722
+   }
+  ],
+  "Kimya": [
+   {
+    "sector": "Ambalaj",
+    "score": 0.63
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.601
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.588
+   }
+  ],
+  "Toptan Ticaret": [
+   {
+    "sector": "Yatırım Ortaklığı",
+    "score": 0.694
+   },
+   {
+    "sector": "İş Makinesi ve Ticari Araç",
+    "score": 0.677
+   },
+   {
+    "sector": "Mağazacılık",
+    "score": 0.657
+   }
+  ],
+  "Yapı Ürünleri": [
+   {
+    "sector": "Endüstriyel Ürünler",
+    "score": 0.814
+   },
+   {
+    "sector": "Çimento ve Yapı Malz.",
+    "score": 0.686
+   },
+   {
+    "sector": "İnşaat ve Taahhüt",
+    "score": 0.682
+   }
+  ],
+  "Aracı Kurum": [
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.789
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.767
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.741
+   }
+  ],
+  "Otomotiv Yan Sanayi": [
+   {
+    "sector": "İş Makinesi ve Ticari Araç",
+    "score": 0.699
+   },
+   {
+    "sector": "Otomotiv",
+    "score": 0.697
+   },
+   {
+    "sector": "Otomotiv Yedek Parça",
+    "score": 0.693
+   }
+  ],
+  "Sigorta": [
+   {
+    "sector": "Finansal Kiralama",
+    "score": 0.607
+   },
+   {
+    "sector": "Ticari Hizmetler",
+    "score": 0.586
+   },
+   {
+    "sector": "Hizmet",
+    "score": 0.579
+   }
+  ],
+  "İş Makinesi ve Ticari Araç": [
+   {
+    "sector": "Otomotiv Yan Sanayi",
+    "score": 0.699
+   },
+   {
+    "sector": "Makine",
+    "score": 0.694
+   },
+   {
+    "sector": "Ticari Hizmetler",
+    "score": 0.693
+   }
+  ],
+  "Finansal Kiralama": [
+   {
+    "sector": "Yatırım Ortaklığı",
+    "score": 0.673
+   },
+   {
+    "sector": "Banka",
+    "score": 0.648
+   },
+   {
+    "sector": "Toptan Ticaret",
+    "score": 0.642
+   }
+  ],
+  "Medya ve Eğlence": [
+   {
+    "sector": "Yayıncılık",
+    "score": 0.602
+   },
+   {
+    "sector": "Eğlence Ürünleri",
+    "score": 0.567
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.541
+   }
+  ],
+  "İçecek": [
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.625
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.617
+   },
+   {
+    "sector": "Gayrimenkul",
+    "score": 0.594
+   }
+  ],
+  "Doğalgaz": [
+   {
+    "sector": "Petrol",
+    "score": 0.669
+   },
+   {
+    "sector": "Rafineri",
+    "score": 0.603
+   },
+   {
+    "sector": "Yenilenebilir Enerji",
+    "score": 0.586
+   }
+  ],
+  "Hizmet": [
+   {
+    "sector": "Ticari Hizmetler",
+    "score": 0.697
+   },
+   {
+    "sector": "Girişim Sermayesi",
+    "score": 0.656
+   },
+   {
+    "sector": "Ulaştırma",
+    "score": 0.643
+   }
+  ],
+  "Metal ve Maden": [
+   {
+    "sector": "Metal İşleme",
+    "score": 0.835
+   },
+   {
+    "sector": "Demir Çelik",
+    "score": 0.788
+   },
+   {
+    "sector": "Altın ve Kıymetli Maden",
+    "score": 0.713
+   }
+  ],
+  "Metal İşleme": [
+   {
+    "sector": "Metal ve Maden",
+    "score": 0.835
+   },
+   {
+    "sector": "Demir Çelik",
+    "score": 0.798
+   },
+   {
+    "sector": "Çimento ve Yapı Malz.",
+    "score": 0.688
+   }
+  ],
+  "Otomotiv": [
+   {
+    "sector": "Otomotiv Yedek Parça",
+    "score": 0.699
+   },
+   {
+    "sector": "Otomotiv Yan Sanayi",
+    "score": 0.697
+   },
+   {
+    "sector": "Makine",
+    "score": 0.681
+   }
+  ],
+  "Telekom": [
+   {
+    "sector": "Turizm",
+    "score": 0.588
+   },
+   {
+    "sector": "Elektronik Dağıtım",
+    "score": 0.539
+   },
+   {
+    "sector": "Toptan Ticaret",
+    "score": 0.528
+   }
+  ],
+  "Ticari Hizmetler": [
+   {
+    "sector": "Hizmet",
+    "score": 0.697
+   },
+   {
+    "sector": "İş Makinesi ve Ticari Araç",
+    "score": 0.693
+   },
+   {
+    "sector": "Toptan Ticaret",
+    "score": 0.638
+   }
+  ],
+  "Beyaz Eşya ve Elektronik": [
+   {
+    "sector": "Elektronik Perakende",
+    "score": 0.811
+   },
+   {
+    "sector": "Elektronik",
+    "score": 0.786
+   },
+   {
+    "sector": "Elektronik Dağıtım",
+    "score": 0.771
+   }
+  ],
+  "Elektronik": [
+   {
+    "sector": "Elektronik Perakende",
+    "score": 0.887
+   },
+   {
+    "sector": "Elektronik Dağıtım",
+    "score": 0.853
+   },
+   {
+    "sector": "Beyaz Eşya ve Elektronik",
+    "score": 0.786
+   }
+  ],
+  "Kişisel Bakım": [
+   {
+    "sector": "İmalat",
+    "score": 0.617
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.612
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.589
+   }
+  ],
+  "Matbaa": [
+   {
+    "sector": "Ambalaj",
+    "score": 0.617
+   },
+   {
+    "sector": "Kargo",
+    "score": 0.601
+   },
+   {
+    "sector": "Kimya",
+    "score": 0.582
+   }
+  ],
+  "Mobilya ve Ev": [
+   {
+    "sector": "Konut İnşaatı",
+    "score": 0.599
+   },
+   {
+    "sector": "Beyaz Eşya ve Elektronik",
+    "score": 0.531
+   },
+   {
+    "sector": "Yapı Ürünleri",
+    "score": 0.527
+   }
+  ],
+  "Restoran": [
+   {
+    "sector": "Gıda Perakende",
+    "score": 0.703
+   },
+   {
+    "sector": "Gıda",
+    "score": 0.669
+   },
+   {
+    "sector": "Gıda Dağıtım",
+    "score": 0.594
+   }
+  ],
+  "Gübre ve Tarım Kimyası": [
+   {
+    "sector": "Gıda Dağıtım",
+    "score": 0.612
+   },
+   {
+    "sector": "Endüstriyel Ürünler",
+    "score": 0.607
+   },
+   {
+    "sector": "Orman Ürünleri",
+    "score": 0.581
+   }
+  ],
+  "Perakende": [
+   {
+    "sector": "İmalat",
+    "score": 0.82
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.741
+   },
+   {
+    "sector": "Diğer",
+    "score": 0.714
+   }
+  ],
+  "Savunma": [
+   {
+    "sector": "İmalat",
+    "score": 0.515
+   },
+   {
+    "sector": "Girişim Sermayesi",
+    "score": 0.5
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.499
+   }
+  ],
+  "Tüketim Ürünleri": [
+   {
+    "sector": "Endüstriyel Ürünler",
+    "score": 0.757
+   },
+   {
+    "sector": "Gıda Perakende",
+    "score": 0.722
+   },
+   {
+    "sector": "Eğlence Ürünleri",
+    "score": 0.71
+   }
+  ],
+  "Ulaştırma": [
+   {
+    "sector": "Denizcilik",
+    "score": 0.764
+   },
+   {
+    "sector": "Donanım",
+    "score": 0.763
+   },
+   {
+    "sector": "Havacılık",
+    "score": 0.716
+   }
+  ],
+  "Yayıncılık": [
+   {
+    "sector": "Kağıt",
+    "score": 0.633
+   },
+   {
+    "sector": "Reklam",
+    "score": 0.63
+   },
+   {
+    "sector": "Medya ve Eğlence",
+    "score": 0.602
+   }
+  ],
+  "Altın ve Kıymetli Maden": [
+   {
+    "sector": "Metal ve Maden",
+    "score": 0.713
+   },
+   {
+    "sector": "Metal İşleme",
+    "score": 0.658
+   },
+   {
+    "sector": "Alüminyum",
+    "score": 0.657
+   }
+  ],
+  "Alüminyum": [
+   {
+    "sector": "Metal ve Maden",
+    "score": 0.68
+   },
+   {
+    "sector": "Altın ve Kıymetli Maden",
+    "score": 0.657
+   },
+   {
+    "sector": "Metal İşleme",
+    "score": 0.634
+   }
+  ],
+  "Denizcilik": [
+   {
+    "sector": "Donanım",
+    "score": 0.805
+   },
+   {
+    "sector": "Ulaştırma",
+    "score": 0.764
+   },
+   {
+    "sector": "Kargo",
+    "score": 0.637
+   }
+  ],
+  "Diğer": [
+   {
+    "sector": "Perakende",
+    "score": 0.714
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.681
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.659
+   }
+  ],
+  "Girişim Sermayesi": [
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.664
+   },
+   {
+    "sector": "Hizmet",
+    "score": 0.656
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.655
+   }
+  ],
+  "Havacılık": [
+   {
+    "sector": "Ulaştırma",
+    "score": 0.716
+   },
+   {
+    "sector": "Denizcilik",
+    "score": 0.562
+   },
+   {
+    "sector": "Kargo",
+    "score": 0.56
+   }
+  ],
+  "Kargo": [
+   {
+    "sector": "Ulaştırma",
+    "score": 0.713
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.701
+   },
+   {
+    "sector": "Donanım",
+    "score": 0.698
+   }
+  ],
+  "Kağıt": [
+   {
+    "sector": "Tekstil",
+    "score": 0.638
+   },
+   {
+    "sector": "Yayıncılık",
+    "score": 0.633
+   },
+   {
+    "sector": "İmalat",
+    "score": 0.617
+   }
+  ],
+  "Ofis Ürünleri": [
+   {
+    "sector": "Endüstriyel Ürünler",
+    "score": 0.648
+   },
+   {
+    "sector": "Tüketim Ürünleri",
+    "score": 0.648
+   },
+   {
+    "sector": "İş Makinesi ve Ticari Araç",
+    "score": 0.638
+   }
+  ],
+  "Otomotiv Yedek Parça": [
+   {
+    "sector": "Otomotiv",
+    "score": 0.699
+   },
+   {
+    "sector": "Otomotiv Yan Sanayi",
+    "score": 0.693
+   },
+   {
+    "sector": "Makine",
+    "score": 0.578
+   }
+  ],
+  "Reklam": [
+   {
+    "sector": "Yayıncılık",
+    "score": 0.63
+   },
+   {
+    "sector": "Ticari Hizmetler",
+    "score": 0.615
+   },
+   {
+    "sector": "Eğlence Ürünleri",
+    "score": 0.571
+   }
+  ],
+  "Yarı İletken": [
+   {
+    "sector": "İmalat",
+    "score": 0.692
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.681
+   },
+   {
+    "sector": "Aracı Kurum",
+    "score": 0.678
+   }
+  ],
+  "Yatırım Ortaklığı": [
+   {
+    "sector": "Toptan Ticaret",
+    "score": 0.694
+   },
+   {
+    "sector": "Finansal Kiralama",
+    "score": 0.673
+   },
+   {
+    "sector": "Portföy Yönetimi",
+    "score": 0.655
+   }
+  ],
+  "Cam": [
+   {
+    "sector": "Kargo",
+    "score": 0.466
+   },
+   {
+    "sector": "Donanım",
+    "score": 0.461
+   },
+   {
+    "sector": "Elektronik Perakende",
+    "score": 0.452
+   }
+  ],
+  "Demiryolu": [
+   {
+    "sector": "Ulaştırma",
+    "score": 0.626
+   },
+   {
+    "sector": "Kargo",
+    "score": 0.585
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.539
+   }
+  ],
+  "Donanım": [
+   {
+    "sector": "Denizcilik",
+    "score": 0.805
+   },
+   {
+    "sector": "Ulaştırma",
+    "score": 0.763
+   },
+   {
+    "sector": "Kargo",
+    "score": 0.698
+   }
+  ],
+  "Elektronik Perakende": [
+   {
+    "sector": "Elektronik",
+    "score": 0.887
+   },
+   {
+    "sector": "Elektronik Dağıtım",
+    "score": 0.885
+   },
+   {
+    "sector": "Beyaz Eşya ve Elektronik",
+    "score": 0.811
+   }
+  ],
+  "Eğlence Ürünleri": [
+   {
+    "sector": "Tüketim Ürünleri",
+    "score": 0.71
+   },
+   {
+    "sector": "Beyaz Eşya ve Elektronik",
+    "score": 0.63
+   },
+   {
+    "sector": "Endüstriyel Ürünler",
+    "score": 0.616
+   }
+  ],
+  "Giyim Perakende": [
+   {
+    "sector": "Hazır Giyim",
+    "score": 0.794
+   },
+   {
+    "sector": "Tekstil",
+    "score": 0.684
+   },
+   {
+    "sector": "Eğlence Ürünleri",
+    "score": 0.592
+   }
+  ],
+  "Gıda Dağıtım": [
+   {
+    "sector": "Gıda Perakende",
+    "score": 0.837
+   },
+   {
+    "sector": "Gıda",
+    "score": 0.79
+   },
+   {
+    "sector": "Tüketim Ürünleri",
+    "score": 0.662
+   }
+  ],
+  "Kara Taşımacılığı": [
+   {
+    "sector": "Ulaştırma",
+    "score": 0.643
+   },
+   {
+    "sector": "Kargo",
+    "score": 0.611
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.6
+   }
+  ],
+  "Konut İnşaatı": [
+   {
+    "sector": "İnşaat ve Taahhüt",
+    "score": 0.743
+   },
+   {
+    "sector": "Mobilya ve Ev",
+    "score": 0.599
+   },
+   {
+    "sector": "Yapı Ürünleri",
+    "score": 0.589
+   }
+  ],
+  "Mağazacılık": [
+   {
+    "sector": "Toptan Ticaret",
+    "score": 0.657
+   },
+   {
+    "sector": "Gıda Perakende",
+    "score": 0.643
+   },
+   {
+    "sector": "Ofis Ürünleri",
+    "score": 0.638
+   }
+  ],
+  "Orman Ürünleri": [
+   {
+    "sector": "Gübre ve Tarım Kimyası",
+    "score": 0.581
+   },
+   {
+    "sector": "Endüstriyel Ürünler",
+    "score": 0.556
+   },
+   {
+    "sector": "Tüketim Ürünleri",
+    "score": 0.551
+   }
+  ],
+  "Petrol": [
+   {
+    "sector": "Rafineri",
+    "score": 0.767
+   },
+   {
+    "sector": "Doğalgaz",
+    "score": 0.669
+   },
+   {
+    "sector": "Otomotiv",
+    "score": 0.581
+   }
+  ],
+  "Rafineri": [
+   {
+    "sector": "Petrol",
+    "score": 0.767
+   },
+   {
+    "sector": "Perakende",
+    "score": 0.624
+   },
+   {
+    "sector": "Denizcilik",
+    "score": 0.622
+   }
+  ]
+ },
+ "clusters": {
+  "0.8": [
+   [
+    "Gıda",
+    "Gıda Perakende",
+    "Gıda Dağıtım"
+   ],
+   [
+    "Elektrik",
+    "Elektrikli Ürünler"
+   ],
+   [
+    "Endüstriyel Ürünler",
+    "Yapı Ürünleri"
+   ],
+   [
+    "Elektronik Dağıtım",
+    "Elektronik",
+    "Elektronik Perakende"
+   ],
+   [
+    "İmalat",
+    "Perakende"
+   ],
+   [
+    "Metal ve Maden",
+    "Metal İşleme"
+   ],
+   [
+    "Denizcilik",
+    "Donanım"
+   ]
+  ],
+  "0.7": [
+   [
+    "Gıda",
+    "Gıda Perakende",
+    "Gıda Dağıtım"
+   ],
+   [
+    "Gayrimenkul",
+    "İmalat",
+    "Aracı Kurum",
+    "Perakende"
+   ],
+   [
+    "Demir Çelik",
+    "Metal ve Maden",
+    "Metal İşleme"
+   ],
+   [
+    "Elektrik",
+    "Elektrikli Ürünler"
+   ],
+   [
+    "Endüstriyel Ürünler",
+    "Yapı Ürünleri",
+    "Tüketim Ürünleri"
+   ],
+   [
+    "Elektronik Dağıtım",
+    "Elektronik",
+    "Beyaz Eşya ve Elektronik",
+    "Elektronik Perakende"
+   ],
+   [
+    "Hazır Giyim",
+    "Giyim Perakende"
+   ],
+   [
+    "İnşaat ve Taahhüt",
+    "Konut İnşaatı"
+   ],
+   [
+    "Ulaştırma",
+    "Denizcilik",
+    "Donanım"
+   ],
+   [
+    "Petrol",
+    "Rafineri"
+   ]
+  ],
+  "0.62": [
+   [
+    "Gayrimenkul",
+    "Ambalaj",
+    "İmalat",
+    "Turizm",
+    "Aracı Kurum",
+    "Perakende",
+    "Diğer"
+   ],
+   [
+    "Gıda",
+    "Gıda Perakende",
+    "Restoran",
+    "Gıda Dağıtım"
+   ],
+   [
+    "Demir Çelik",
+    "Çimento ve Yapı Malz.",
+    "Metal ve Maden",
+    "Metal İşleme",
+    "Altın ve Kıymetli Maden",
+    "Alüminyum"
+   ],
+   [
+    "Yenilenebilir Enerji",
+    "Elektrik",
+    "Elektrikli Ürünler"
+   ],
+   [
+    "Makine",
+    "Otomotiv Yan Sanayi",
+    "İş Makinesi ve Ticari Araç",
+    "Otomotiv",
+    "Otomotiv Yedek Parça"
+   ],
+   [
+    "Tekstil",
+    "Hazır Giyim",
+    "Giyim Perakende"
+   ],
+   [
+    "Yazılım",
+    "Elektronik Dağıtım",
+    "Elektronik",
+    "Beyaz Eşya ve Elektronik",
+    "Elektronik Perakende"
+   ],
+   [
+    "Portföy Yönetimi",
+    "Toptan Ticaret",
+    "Finansal Kiralama",
+    "Yatırım Ortaklığı"
+   ],
+   [
+    "Endüstriyel Ürünler",
+    "Yapı Ürünleri",
+    "Tüketim Ürünleri",
+    "Eğlence Ürünleri"
+   ],
+   [
+    "İnşaat ve Taahhüt",
+    "Konut İnşaatı"
+   ],
+   [
+    "Hizmet",
+    "Ticari Hizmetler"
+   ],
+   [
+    "Ulaştırma",
+    "Denizcilik",
+    "Kargo",
+    "Donanım"
+   ],
+   [
+    "Doğalgaz",
+    "Petrol",
+    "Rafineri"
+   ],
+   [
+    "Yayıncılık",
+    "Kağıt"
+   ],
+   [
+    "Ofis Ürünleri",
+    "Mağazacılık"
+   ]
+  ]
+ }
+}
