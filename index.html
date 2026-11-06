@@ -124,7 +124,7 @@ tbody tr:last-child td{border-bottom:0}
 .count{padding:12px 16px;color:var(--muted);font-size:12px;border-top:1px solid var(--ink)}
 .star{font:inherit;background:none;border:0;cursor:pointer;padding:2px 6px 2px 0;font-size:17px;line-height:1;color:var(--muted);vertical-align:-2px}
 .star.on,.star:hover{color:var(--accent)}
-td.first .fc{display:flex;align-items:flex-start;gap:4px}
+td.first .fc{display:flex;align-items:center;gap:12px}
 #tbl td.first,#tbl th:first-child{position:sticky;left:0;z-index:1;background:var(--bg)}
 #tbl th:first-child{z-index:2}
 .empty{padding:32px 16px;text-align:center;color:var(--muted)}
@@ -425,7 +425,7 @@ const listCols = () => secSel === "Sigorta" ? COLS_INS : COLS_GENERAL;
 function renderHead() {
   $("#tblHead").innerHTML = `<tr><th data-k="symbol">Hisse</th><th data-k="price" class="n c-price">Fiyat</th><th data-k="market_cap" class="n">Piy.<br>Değeri</th><th data-k="pe" class="n">F/K</th><th data-k="pb" class="n">PD/DD</th>` +
     listCols().map(c => `<th data-k="${c.k}" class="n"${c.t ? ` title="${c.t}"` : ""}>${c.h}</th>`).join("") +
-    `<th class="act" title="☆ favori · + karşılaştır">Favori<br>Kıyas</th></tr>`;
+    `<th class="act" title="Karşılaştırmaya ekle / çıkar">Kıyas</th></tr>`;
 }
 const pct = v => v == null ? "—" : (v < 0 ? "−%" : "%") + nf(1).format(Math.abs(v * 100));
 const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
@@ -514,19 +514,18 @@ function renderList() {
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
-      <td class="first"><div class="fc"><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
+      <td class="first"><div class="fc"><button type="button" class="abtn fav ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" aria-pressed="${favs.has(s.symbol)}" aria-label="${s.symbol} favori" title="${favs.has(s.symbol) ? "Favorilerden çıkar" : "Favorilere ekle"}">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
       <td class="n c-price">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${metricHtml(s, "pe", mult)}</td>
       <td class="n">${metricHtml(s, "pb", mult)}</td>
       ${listCols().map(c => `<td class="n ${c.cls ? c.cls(s) : ""}">${metricHtml(s, c.k, c.f, val(s, c.k))}</td>`).join("")}
       <td class="act" data-act><div class="actw">
-        <button type="button" class="abtn fav ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" aria-pressed="${favs.has(s.symbol)}" aria-label="${s.symbol} favori" title="${favs.has(s.symbol) ? "Favorilerden çıkar" : "Favorilere ekle"}">${favs.has(s.symbol) ? "★" : "☆"}</button>
         <button type="button" class="abtn cmpb ${cmpSel.includes(s.symbol) ? "on" : ""}" data-cmp="${s.symbol}" aria-pressed="${cmpSel.includes(s.symbol)}" aria-label="${s.symbol} karşılaştır" title="${cmpSel.includes(s.symbol) ? "Karşılaştırmadan çıkar" : (cmpSel.length >= 3 ? "En fazla 3 hisse" : "Karşılaştırmaya ekle")}"${!cmpSel.includes(s.symbol) && cmpSel.length >= 3 ? " disabled" : ""}>${cmpSel.includes(s.symbol) ? "✓" : "+"}</button>
       </div></td>
     </tr>`).join("");
   if (!rows.length && view === "fav" && !favs.size)
-    $("#tbl tbody").innerHTML = `<tr><td colspan="11" class="empty">Henüz favorin yok. "Tümü"ne geçip satırın sağındaki ☆ düğmesine dokun.</td></tr>`;
+    $("#tbl tbody").innerHTML = `<tr><td colspan="11" class="empty">Henüz favorin yok. "Tümü"ne geçip hisse adının solundaki ☆ düğmesine dokun.</td></tr>`;
   document.querySelectorAll("#tbl th").forEach(th => th.classList.toggle("sorted", th.dataset.k === k));
   const tw = $("#tbl").parentElement; $("#hint").classList.toggle("show", tw.scrollWidth > tw.clientWidth + 4);
   $("#count").innerHTML = `${rows.length} / ${state.stocks.length} hisse · Eksik değerler sıfır sayılmaz; sayısal filtrelere dahil edilmez.` + (active.length ? `<details class="filter-report"><summary>Filtre dışında kalanlar (${[...exclusions.values()].reduce((n,a)=>n+a.length,0)})</summary><p>Arama, sektör ve favori kapsamındaki şirketler için ilk sağlanmayan kriter gösterilir; her şirket bir kez sayılır.</p>${[...exclusions].map(([why,syms])=>`<p><b>${esc(why)}</b> · ${syms.length} şirket<br>${syms.map(esc).join(", ")}</p>`).join("")}</details>` : "");
