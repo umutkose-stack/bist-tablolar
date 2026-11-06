@@ -446,7 +446,8 @@ def process(symbol: str, name: str = "") -> dict | None:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             qd = t._get_isyatirim().get_realtime_quote(symbol)  # noqa: SLF001
-        price = clean(qd.get("last")) or None
+        # Seans öncesi/sonrası "last" 0 gelebilir: o zaman önceki kapanışı kullan
+        price = clean(qd.get("last")) or clean(qd.get("close")) or None
         ut = qd.get("update_time")
         if price and ut is not None:
             price_time = ut.isoformat(timespec="minutes") if hasattr(ut, "isoformat") else str(ut)
