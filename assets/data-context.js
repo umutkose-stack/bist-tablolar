@@ -3,6 +3,12 @@
   function reason(s, k, value) {
     const v = value === undefined ? s[k] : value;
     if (v != null && Number.isFinite(v) && !(['pe','pb','ev_ebitda','peg'].includes(k) && v < 0)) return null;
+    const INS = ['combined_ratio_ttm','loss_ratio_ttm','expense_ratio_ttm','roe','gwp_growth','net_premium_margin_ttm','tech_margin_ttm'];
+    if (INS.includes(k)) {
+      if (s.kind !== 'sigorta') return 'Yalnızca sigorta şirketlerinde hesaplanır';
+      if (s.ins_type === 'hayat' && ['combined_ratio_ttm','loss_ratio_ttm','expense_ratio_ttm'].includes(k)) return 'Hayat/emeklilik şirketinde uygulanmaz';
+      return 'Veri yok';
+    }
     if ((s.group === 'banka' || ['Banka','Sigorta'].includes(s.sector)) &&
         ['ev_ebitda','nd_ebitda','op','net','op_margin_ttm','net_margin_ttm','op_margin_q','net_margin_q'].includes(k))
       return 'Bu sektör için uygulanmaz';

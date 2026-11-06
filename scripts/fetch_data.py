@@ -299,8 +299,93 @@ ROWS = {
 
 EQUITY_ROWS = {
     "equity_parent": ([r"ana ortakliga ait ozkaynaklar"], []),
-    "equity":        ([r"^ozkaynaklar$", r"^toplam ozkaynaklar"], []),
+    "equity":        ([r"^ozkaynaklar$", r"^toplam ozkaynaklar", r"^ozsermaye toplami$"], []),
 }
+
+
+# ------------------------------------------------------------ sigorta şirketleri
+#
+# Sigortacıların tablosu (SEDDK şablonu) satış/esas faaliyet kârı içermez; aynı adlı
+# satırlar farklı bölümlerde tekrar eder (A: hayat dışı gelir, D: hayat gelir…). Bu yüzden
+# satırlar bölüm harfine göre seçilir. Sigortacılar TMS 29 uygulamadığı için tutarlar nominal.
+
+INS_ROWS = {   # anahtar: (bölüm harfi, satır deseni)
+    "gwp_nl":    ("A", r"brut yazilan primler"),
+    "earned_nl": ("A", r"^1 kazanilmis primler"),
+    "claims_nl": ("B", r"^1 gerceklesen hasarlar"),
+    "opex_nl":   ("B", r"faaliyet giderleri"),
+    "tech_nl":   ("C", r"^c teknik bolum dengesi hayat disi"),
+    "gwp_life":  ("D", r"brut yazilan primler"),
+    "tech_all":  ("J", r"^j genel teknik bolum dengesi"),
+    "net":       ("N", r"^3 donem net kar"),
+}
+
+
+def insurance_rows(df) -> dict:
+    out, sec = {}, None
+    for pos in range(len(df.index)):
+        n = norm(df.index[pos])
+        m = re.match(r"^([a-n])\s", n)
+        if m and re.match(r"^[a-n] ", n) and len(n) > 2:
+            sec = m.group(1).upper()
+        for key, (want, pat) in INS_ROWS.items():
+            if key not in out and sec == want and re.search(pat, n):
+                out[key] = {c: clean(df.iat[pos, j]) for j, c in enumerate(df.columns)}
+    return out
+
+
+def insurance_metrics(inc, cols_all: list[str], cols: list[str], equity: dict) -> dict | None:
+    rows = insurance_rows(inc)
+    if "gwp_nl" not in rows or "net" not in rows:
+        return None
+    single = {k: to_single_quarters({c: v.get(c) for c in cols_all}) for k, v in rows.items()}
+    T = {k: ttm(v, cols_all) for k, v in single.items()}
+    Tp = {k: ttm(v, cols_all[4:]) for k, v in single.items()}
+    gwp = (T.get("gwp_nl") or 0) + (T.get("gwp_life") or 0) if T.get("gwp_nl") is not None else None
+    gwp_prev = (Tp.get("gwp_nl") or 0) + (Tp.get("gwp_life") or 0) if Tp.get("gwp_nl") is not None else None
+    nonlife_share = (T["gwp_nl"] / gwp) if gwp else None
+    life = nonlife_share is not None and nonlife_share < 0.5
+    def r(a, b, neg=False):
+        if a is None or not b:
+            return None
+        v = (-a if neg else a) / b
+        return v if abs(v) < 10 else None
+    loss = None if life else r(T.get("claims_nl"), T.get("earned_nl"), True)
+    expense = None if life else r(T.get("opex_nl"), T.get("earned_nl"), True)
+    eq_now = equity.get(cols[0]) if equity else None
+    eq_prev = equity.get(cols[4]) if equity and len(cols) > 4 else None
+    eq_avg = (eq_now + eq_prev) / 2 if (eq_now and eq_prev) else eq_now
+    roe = T["net"] / eq_avg if (T.get("net") is not None and eq_avg and eq_avg > 0) else None
+    quarters = []
+    for c in cols:
+        g = (single["gwp_nl"].get(c) or 0) + (single.get("gwp_life", {}).get(c) or 0) if single["gwp_nl"].get(c) is not None else None
+        en = single.get("earned_nl", {}).get(c)
+        lr = None if life else r(single.get("claims_nl", {}).get(c), en, True)
+        er = None if life else r(single.get("opex_nl", {}).get(c), en, True)
+        quarters.append({
+            "period": c, "gwp": g, "earned_nl": en,
+            "loss_ratio": lr, "combined_ratio": (lr + er) if (lr is not None and er is not None) else None,
+            "claims_nl": single.get("claims_nl", {}).get(c), "opex_nl": single.get("opex_nl", {}).get(c),
+            "tech": single.get("tech_all", {}).get(c), "net": single["net"].get(c),
+            "net_premium_margin": r(single["net"].get(c), g),
+            "equity": equity.get(c) if equity else None,
+        })
+    return {
+        "kind": "sigorta",
+        "ins_type": "hayat" if life else "hayat_disi",
+        "nonlife_share": nonlife_share,
+        "gwp_ttm": gwp,
+        "gwp_growth": (gwp / gwp_prev - 1) if (gwp and gwp_prev and gwp_prev > 0) else None,
+        "loss_ratio_ttm": loss,
+        "expense_ratio_ttm": expense,
+        "combined_ratio_ttm": (loss + expense) if (loss is not None and expense is not None) else None,
+        "tech_ttm": T.get("tech_all"),
+        "tech_margin_ttm": r(T.get("tech_all"), gwp),
+        "net_premium_margin_ttm": r(T.get("net"), gwp),
+        "net_ttm_ins": T.get("net"),
+        "roe": roe,
+        "ins_quarters": quarters,
+    }
 
 
 def recent_quarters(n: int) -> list[tuple[int, int]]:
@@ -518,9 +603,16 @@ def process(symbol: str, name: str = "") -> dict | None:
         "net_margin_q": quarters[0]["net_margin"],
     }
 
+    ins = insurance_metrics(inc, cols_all, cols, equity) if group == "UFRS" else None
+    if ins:
+        iq = ins.pop("ins_quarters")
+        summary.update(ins)
+        if summary.get("net_ttm") is None:
+            summary["net_ttm"] = ins.get("net_ttm_ins")
     detail = {
         **summary,
         "quarters": quarters,
+        "ins_quarters": iq if ins else None,
         "income_statement": df_to_table(inc[cols]),
         "balance_sheet": df_to_table(bal[[c for c in cols if c in bal.columns]]) if bal is not None and not bal.empty else None,
         "income_is_cumulative": INCOME_IS_CUMULATIVE,

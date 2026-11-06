@@ -304,18 +304,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
     </div>
     <div class="tablewrap">
       <table id="tbl">
-        <thead><tr>
-          <th data-k="symbol">Hisse</th>
-          <th data-k="price" class="n c-price">Fiyat</th>
-          <th data-k="market_cap" class="n">Piy.<br>Değeri</th>
-          <th data-k="pe" class="n">F/K</th>
-          <th data-k="pb" class="n">PD/DD</th>
-          <th data-k="ev_ebitda" class="n" title="Firma değeri / son 12 ay FAVÖK">FD/FAVÖK</th>
-          <th data-k="nd_ebitda" class="n" title="Net borç / son 12 ay FAVÖK. Negatif = net nakit">Net Borç/<br>FAVÖK</th>
-          <th data-k="peg" class="n" title="F/K ÷ yıllık net kâr büyümesi (%)">PEG</th>
-          <th data-k="op" class="n">Esas Faal.<br>Marjı</th>
-          <th data-k="net" class="n">Net Kâr<br>Marjı</th>
-        </tr></thead>
+        <thead id="tblHead"></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -338,12 +327,12 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
     <div class="panel sec rel" id="rel"></div>
     <div class="label"><span>03 / Değerleme ve borç</span></div>
     <div class="tiles" id="tiles"></div>
-    <div class="label"><span>04 / Çeyreklik marjlar</span></div>
+    <div class="label"><span id="lbl4">04 / Çeyreklik marjlar</span></div>
     <div class="panel chartbox"><div class="cw"><canvas id="mChart"></canvas></div></div>
     <div class="label"><span>05 / Yıllıklandırılmış trend (TTM)</span><span class="r">her nokta = son 4 çeyreğin toplamı</span></div>
     <div class="panel chartbox ttm">
-      <div><p class="ch">Marjlar</p><div class="cw"><canvas id="tMarg"></canvas></div></div>
-      <div><p class="ch">Satışlar ve net kâr</p><div class="cw"><canvas id="tAbs"></canvas></div></div>
+      <div><p class="ch" id="chMarg">Marjlar</p><div class="cw"><canvas id="tMarg"></canvas></div></div>
+      <div><p class="ch" id="chAbs">Satışlar ve net kâr</p><div class="cw"><canvas id="tAbs"></canvas></div></div>
       <p class="note" id="tNote"></p>
     </div>
     <div class="label"><span>06 / Çeyreklik özet</span><span class="r">tek çeyrek</span></div>
@@ -405,7 +394,28 @@ function money(v) {
 }
 const mult = v => v == null ? "—" : (v < 0 ? "a.d." : nf(2).format(v));
 const ndx = v => v == null ? "—" : (v < 0 ? "net nakit" : nf(2).format(v));
-const LOW_GOOD = ["pe", "pb", "ev_ebitda", "nd_ebitda", "peg"];
+const LOW_GOOD = ["pe", "pb", "ev_ebitda", "nd_ebitda", "peg", "combined_ratio_ttm", "loss_ratio_ttm"];
+const pct1 = v => v == null ? "—" : "%" + nf(1).format(v * 100);
+/* Tablo sütunları: genel görünüm ve sigorta görünümü (Sektör = Sigorta seçiliyken) */
+const COLS_GENERAL = [
+  { k: "ev_ebitda", h: "FD/FAVÖK", t: "Firma değeri / son 12 ay FAVÖK", f: mult },
+  { k: "nd_ebitda", h: "Net Borç/<br>FAVÖK", t: "Net borç / son 12 ay FAVÖK. Negatif = net nakit", f: ndx, cls: s => s.nd_ebitda != null && s.nd_ebitda < 0 ? "pos" : "" },
+  { k: "peg", h: "PEG", t: "F/K ÷ yıllık net kâr büyümesi (%)", f: mult },
+  { k: "op", h: "Esas Faal.<br>Marjı", f: pct, cls: s => sign(val(s, "op")) },
+  { k: "net", h: "Net Kâr<br>Marjı", f: pct, cls: s => sign(val(s, "net")) },
+];
+const COLS_INS = [
+  { k: "gwp_growth", h: "Prim<br>Büyümesi", t: "Brüt yazılan primlerin yıllık büyümesi (son 12 ay, nominal)", f: pct1, cls: s => sign(s.gwp_growth) },
+  { k: "loss_ratio_ttm", h: "Hasar/<br>Prim", t: "Hayat dışı: gerçekleşen hasarlar / kazanılmış primler", f: pct1 },
+  { k: "roe", h: "ROE", t: "Son 12 ay net kâr / ortalama özsermaye", f: pct1, cls: s => sign(s.roe) },
+  { k: "combined_ratio_ttm", h: "Bileşik<br>Rasyo", t: "Hasar oranı + gider oranı (hayat dışı). %100 altı = teknik kâr", f: pct1, cls: s => s.combined_ratio_ttm == null ? "" : (s.combined_ratio_ttm < 1 ? "pos" : "neg") },
+  { k: "net_premium_margin_ttm", h: "Net Kâr/<br>Prim", t: "Son 12 ay net kâr / brüt yazılan primler", f: pct1, cls: s => sign(s.net_premium_margin_ttm) },
+];
+const listCols = () => secSel === "Sigorta" ? COLS_INS : COLS_GENERAL;
+function renderHead() {
+  $("#tblHead").innerHTML = `<tr><th data-k="symbol">Hisse</th><th data-k="price" class="n c-price">Fiyat</th><th data-k="market_cap" class="n">Piy.<br>Değeri</th><th data-k="pe" class="n">F/K</th><th data-k="pb" class="n">PD/DD</th>` +
+    listCols().map(c => `<th data-k="${c.k}" class="n"${c.t ? ` title="${c.t}"` : ""}>${c.h}</th>`).join("") + `</tr>`;
+}
 const pct = v => v == null ? "—" : "%" + nf(1).format(v * 100);
 const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
 const per = p => p ? p.replace(/(\d{4})Q(\d)/, (_, y, q) => `${y}/${q * 3}`) : "—";
@@ -448,7 +458,7 @@ function metricHtml(s, k, format, value = s[k]) {
 function peerValid(s, m) { return !DataContext.reason(s, m.k); }
 function peerMembers(d) {
   const {peers} = peerGroup(d);
-  return REL.map(m => {
+  return relSet(d).map(m => {
     const usable = peers.filter(s => peerValid(s, m));
     return `<details class="peer-list"><summary>${m.l}: kıyaslanan şirketler (${usable.length}/${peers.length})</summary><p>Geçerli değerler medyana dahil edilir. Eksik veya anlamlı olmayan değerler dahil edilmez.</p><div class="table-scroll"><table><thead><tr><th>Şirket</th><th>Bilanço</th><th>Değer / durum</th></tr></thead><tbody>${peers.map(s => `<tr><td><a href="#${encodeURIComponent(s.symbol)}">${esc(s.symbol)}</a></td><td>${per(s.last_period)}</td><td>${metricHtml(s,m.k,m.fmt)}</td></tr>`).join("")}</tbody></table></div></details>`;
   }).join("");
@@ -461,6 +471,7 @@ $("#peerMode").addEventListener("change", async e => {
 function renderList() {
   const q = $("#q").value.trim().toLocaleUpperCase("tr-TR");
   const active = filters.map(f => ({ ...f, n: parseNum(f.v) })).filter(f => f.n != null);
+  renderHead();
   $("#favN").textContent = favs.size ? `(${favs.size})` : "";
   $("#labelR").textContent = `${state.stocks.length} hisse · sıralamak için başlığa dokun`;
   $("#view").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.v === view));
@@ -497,11 +508,7 @@ function renderList() {
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${metricHtml(s, "pe", mult)}</td>
       <td class="n">${metricHtml(s, "pb", mult)}</td>
-      <td class="n">${metricHtml(s, "ev_ebitda", mult)}</td>
-      <td class="n ${s.nd_ebitda != null && s.nd_ebitda < 0 ? "pos" : ""}">${metricHtml(s, "nd_ebitda", ndx)}</td>
-      <td class="n">${metricHtml(s, "peg", mult)}</td>
-      <td class="n ${sign(val(s, "op"))}">${metricHtml(s, "op", pct, val(s, "op"))}</td>
-      <td class="n ${sign(val(s, "net"))}">${metricHtml(s, "net", pct, val(s, "net"))}</td>
+      ${listCols().map(c => `<td class="n ${c.cls ? c.cls(s) : ""}">${metricHtml(s, c.k, c.f, val(s, c.k))}</td>`).join("")}
     </tr>`).join("");
   if (!rows.length && view === "fav" && !favs.size)
     $("#tbl tbody").innerHTML = `<tr><td colspan="10" class="empty">Henüz favorin yok. "Tümü"ne geçip hisselerin yanındaki ☆ işaretine dokun.</td></tr>`;
@@ -520,6 +527,8 @@ async function renderDetail(sym) {
   $("#dataDates").innerHTML = `<div><b>Fiyat tarihi</b>${d.price_kind === "prev_close" ? `Önceki seans kapanışı <span class="dim">(kaynak ${esc(DataContext.date(d.price_at))} itibarıyla)</span>` : esc(DataContext.date(d.price_at || d.price_date))}</div><div><b>Son bilanço dönemi</b>${per(d.last_period)}</div><div><b>Şirket verisi çekilme zamanı</b>${esc(DataContext.date(d.fetched_at))}</div><div><b>Veri paketi hazırlanma zamanı</b>${esc(DataContext.date(state.updatedAt))}</div>`;
   const tile = (k, v, s, cls = "", rk = null) => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div>${rk ? relLine(d, rk) : ""}</div>`;
   $("#dEyebrow").textContent = [d.sector || (d.group === "banka" ? "Banka" : null), d.sector_main && d.sector_main !== d.sector ? d.sector_main : null, "son bilanço " + per(d.last_period)].filter(Boolean).join(" · ");
+  if (d.kind === "sigorta") { renderInsurance(d, tile); return; }
+  setLabels(false);
   $("#band").innerHTML =
     tile("F/K", metricHtml(d, "pe", mult), "Net kâr: " + money(d.net_ttm) + " (12 ay)", "", "pe") +
     tile("PD/DD", metricHtml(d, "pb", mult), "Özkaynak: " + money(d.quarters?.[0]?.equity), "", "pb") +
@@ -572,6 +581,83 @@ async function renderDetail(sym) {
   $("#dCmp").classList.toggle("on", inC);
   $("#dCmp").disabled = !inC && cmpSel.length >= 3;
 }
+function setLabels(ins) {
+  $("#lbl4").textContent = ins ? "04 / Çeyreklik sigortacılık oranları" : "04 / Çeyreklik marjlar";
+  $("#chMarg").textContent = ins ? "Oranlar" : "Marjlar";
+  $("#chAbs").textContent = ins ? "Brüt yazılan prim ve net kâr" : "Satışlar ve net kâr";
+}
+function finishDetail(d) {
+  renderFull(d, document.querySelector("#fullTabs .on").dataset.v);
+  renderRelative(d);
+  const inC = cmpSel.includes(d.symbol);
+  $("#dCmp").textContent = inC ? "✓ Karşılaştırmada" : "+ Karşılaştırmaya ekle";
+  $("#dCmp").classList.toggle("on", inC);
+  $("#dCmp").disabled = !inC && cmpSel.length >= 3;
+}
+function renderInsurance(d, tile) {
+  setLabels(true);
+  const life = d.ins_type === "hayat";
+  const iq = d.ins_quarters || [];
+  const eq = iq[0]?.equity ?? d.equity;
+  $("#band").innerHTML =
+    tile("F/K", metricHtml(d, "pe", mult), "Net kâr: " + money(d.net_ttm) + " (12 ay)", "", "pe") +
+    tile("PD/DD", metricHtml(d, "pb", mult), "Özsermaye: " + money(eq), "", "pb") +
+    tile("ROE", metricHtml(d, "roe", pct1), "Net kâr / ortalama özsermaye", sign(d.roe), "roe") +
+    (life ? tile("Net kâr/prim", metricHtml(d, "net_premium_margin_ttm", pct1), "Hayat/emeklilik şirketi", sign(d.net_premium_margin_ttm), "net_premium_margin_ttm")
+          : tile("Bileşik rasyo", metricHtml(d, "combined_ratio_ttm", pct1), "%100 altı = teknik kâr", d.combined_ratio_ttm == null ? "" : (d.combined_ratio_ttm < 1 ? "pos" : "neg"), "combined_ratio_ttm"));
+  $("#tiles").innerHTML =
+    tile("Brüt yazılan prim", money(d.gwp_ttm), "Yıllık büyüme: " + metricHtml(d, "gwp_growth", pct1) + " (nominal)", "", "gwp_growth") +
+    (life ? tile("Teknik kâr/prim", metricHtml(d, "tech_margin_ttm", pct1), "Genel teknik bölüm dengesi / prim")
+          : tile("Hasar/prim", metricHtml(d, "loss_ratio_ttm", pct1), "Gerçekleşen hasar / kazanılmış prim")) +
+    (life ? tile("Hayat dışı payı", pct1(d.nonlife_share), "Brüt primler içinde")
+          : tile("Gider oranı", metricHtml(d, "expense_ratio_ttm", pct1), "Faaliyet giderleri / kazanılmış prim")) +
+    tile("Piyasa değeri", money(d.market_cap), life ? "Hayat ve emeklilik" : "Hayat dışı sigorta");
+
+  const qs = [...iq].reverse();
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue("--s1").trim(), c2 = css.getPropertyValue("--s2").trim();
+  const grid = css.getPropertyValue("--rule").trim(), muted = css.getPropertyValue("--muted").trim();
+  const P = v => v == null ? null : v * 100;
+  const lineOpts = { maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+    plugins: { legend: { labels: { color: muted, boxWidth: 12 } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: %${nf(1).format(c.parsed.y)}` } } },
+    scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => "%" + v } } } };
+  if (chart) chart.destroy();
+  if (typeof Chart !== "undefined") chart = new Chart($("#mChart"), { type: "line", data: { labels: qs.map(q => per(q.period)), datasets: life
+      ? [{ label: "Net kâr/prim", data: qs.map(q => P(q.net_premium_margin)), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: true }]
+      : [{ label: "Bileşik rasyo", data: qs.map(q => P(q.combined_ratio)), borderColor: c1, backgroundColor: c1, tension: .25, spanGaps: true },
+         { label: "Hasar/prim", data: qs.map(q => P(q.loss_ratio)), borderColor: c2, backgroundColor: c2, tension: .25, spanGaps: true }] },
+    options: lineOpts });
+
+  // TTM: son 4 çeyrek toplamları
+  tCharts.forEach(c => c.destroy()); tCharts = [];
+  const T = [];
+  for (let i = 0; i + 3 < iq.length; i++) {
+    const w = iq.slice(i, i + 4); let ok = true; for (let j = 0; j < 3; j++) if (nextQ(w[j + 1].period) !== w[j].period) ok = false;
+    const sum = k => (ok && w.every(q => q[k] != null)) ? w.reduce((a, q) => a + q[k], 0) : null;
+    const g = sum("gwp"), e = sum("earned_nl"), cl = sum("claims_nl"), ox = sum("opex_nl"), n = sum("net");
+    T.push({ period: w[0].period, gwp: g, net: n, npm: g ? (n == null ? null : n / g) : null,
+      cr: (!life && e && cl != null && ox != null) ? (-cl - ox) / e : null });
+  }
+  T.reverse();
+  if (typeof Chart !== "undefined" && T.length >= 2) {
+    const labels = T.map(q => per(q.period));
+    tCharts.push(new Chart($("#tMarg"), { type: "line", data: { labels, datasets: [
+      ...(life ? [] : [{ label: "Bileşik rasyo (TTM)", data: T.map(q => P(q.cr)), borderColor: c1, backgroundColor: c1, borderWidth: 2, tension: .25, spanGaps: true }]),
+      { label: "Net kâr/prim (TTM)", data: T.map(q => P(q.npm)), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, spanGaps: true }] }, options: lineOpts }));
+    tCharts.push(new Chart($("#tAbs"), { data: { labels, datasets: [
+      { type: "bar", label: "Brüt yazılan prim (TTM)", data: T.map(q => q.gwp), backgroundColor: c1 + "33", borderColor: c1, borderWidth: 1, yAxisID: "y" },
+      { type: "line", label: "Net kâr (TTM)", data: T.map(q => q.net), borderColor: c2, backgroundColor: c2, borderWidth: 2, tension: .25, yAxisID: "y1", spanGaps: true }] },
+      options: { ...lineOpts, plugins: { ...lineOpts.plugins, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${money(c.parsed.y)}` } } },
+        scales: { x: { grid: { display: false }, ticks: { color: muted } }, y: { grid: { color: grid }, ticks: { color: muted, callback: v => money(v) } },
+          y1: { position: "right", grid: { display: false }, ticks: { color: c2, callback: v => money(v) } } } } }));
+  }
+  $("#tNote").textContent = T.length >= 2 ? "Her nokta son 4 çeyreğin toplamı. Sigortacılar TMS 29 uygulamadığı için tutarlar nominaldir." : "TTM için yeterli çeyrek yok (kaynakta bazı dönemler eksik).";
+
+  $("#qTbl").innerHTML = `<thead><tr><th>Dönem</th><th class="n">Brüt prim</th><th class="n">Kaz. prim (HD)</th><th class="n">Hasar/prim</th><th class="n">Bileşik rasyo</th><th class="n">Teknik denge</th><th class="n">Net kâr</th><th class="n">Net kâr/prim</th><th class="n">Özsermaye</th></tr></thead><tbody>` +
+    iq.map(q => `<tr><td>${per(q.period)}</td><td class="n">${money(q.gwp)}</td><td class="n">${money(q.earned_nl)}</td><td class="n">${life ? "u.d." : pct1(q.loss_ratio)}</td><td class="n ${q.combined_ratio == null ? "" : (q.combined_ratio < 1 ? "pos" : "neg")}">${life ? "u.d." : pct1(q.combined_ratio)}</td><td class="n ${sign(q.tech)}">${money(q.tech)}</td><td class="n ${sign(q.net)}">${money(q.net)}</td><td class="n ${sign(q.net_premium_margin)}">${pct1(q.net_premium_margin)}</td><td class="n">${money(q.equity)}</td></tr>`).join("") + "</tbody>";
+  $("#qNote").textContent = "Sigortacılar için satış ve esas faaliyet kârı yerine prim, hasar ve teknik bölüm dengesi kullanılır. Bileşik rasyo = (gerçekleşen hasarlar + faaliyet giderleri) / kazanılmış primler, hayat dışı branş için; %100'ün altı teknik kâr demektir. Hayat/emeklilik şirketlerinde bileşik rasyo uygulanmaz (u.d.). Tutarlar nominal; tek çeyrekler kümülatiften fark alınarak bulunur.";
+  finishDetail(d);
+}
 function renderFull(d, key) {
   const t = d[key];
   if (!t) { $("#fullTbl").innerHTML = "<tr><td class='dim'>Veri yok</td></tr>"; return; }
@@ -595,7 +681,7 @@ function route() {
 window.addEventListener("hashchange", route);
 window.addEventListener("resize", () => { const tw = $("#tbl").parentElement; $("#hint").classList.toggle("show", tw.scrollWidth > tw.clientWidth + 4); });
 $("#q").addEventListener("input", renderList);
-$("#tbl thead").addEventListener("click", e => {
+$("#tblHead").addEventListener("click", e => {
   const k = e.target.closest("th")?.dataset.k; if (!k) return;
   state.sort = { k, dir: state.sort.k === k ? -state.sort.dir : (k === "symbol" || LOW_GOOD.includes(k) ? 1 : -1) };
   renderList();
@@ -775,6 +861,15 @@ const REL = [
   { k: "op_margin_ttm", l: "Esas faal. marjı", fmt: v => "%" + nf(1).format(v * 100), margin: true },
   { k: "net_margin_ttm", l: "Net kâr marjı", fmt: v => "%" + nf(1).format(v * 100), margin: true },
 ];
+const REL_INS = [
+  { k: "pe", l: "F/K", fmt: v => nf(1).format(v), pos: true, low: true },
+  { k: "pb", l: "PD/DD", fmt: v => nf(2).format(v), pos: true, low: true },
+  { k: "roe", l: "ROE", fmt: v => "%" + nf(1).format(v * 100), margin: true },
+  { k: "combined_ratio_ttm", l: "Bileşik rasyo", fmt: v => "%" + nf(1).format(v * 100), margin: true, low: true, inv: true },
+  { k: "net_premium_margin_ttm", l: "Net kâr/prim", fmt: v => "%" + nf(1).format(v * 100), margin: true },
+  { k: "gwp_growth", l: "Prim büyümesi", fmt: v => "%" + nf(1).format(v * 100), margin: true },
+];
+const relSet = d => d.kind === "sigorta" ? REL_INS : REL;
 function median(a) { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), m = b.length >> 1; return b.length % 2 ? b[m] : (b[m - 1] + b[m]) / 2; }
 function quant(b, q) { const i = (b.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return b[lo] + (b[hi] - b[lo]) * (i - lo); }
 function peerGroup(d) {
@@ -791,7 +886,7 @@ function peerGroup(d) {
 }
 /* Kartların altındaki kısa satır: medyana göre sayısal fark. */
 function relLine(d, k) {
-  const m = REL.find(x => x.k === k); if (!m) return "";
+  const m = relSet(d).find(x => x.k === k); if (!m) return "";
   const { sec, wide, peers } = peerGroup(d);
   const valid = v => v != null && isFinite(v) && !(m.pos && v < 0);
   const vals = peers.filter(s=>peerValid(s,m)).map(s => s[k]).filter(valid);
@@ -803,7 +898,7 @@ function relLine(d, k) {
   const me = d[k];
   let tail = "";
   if (peerValid(d,m)) {
-    if (m.margin) { const dp = (me - med) * 100; tail = ` · <b class="${dp >= 0 ? "rp" : "rn"}">${dp >= 0 ? "+" : "−"}${nf(1).format(Math.abs(dp))} puan</b>`; }
+    if (m.margin) { const dp = (me - med) * 100; const good = m.inv ? dp <= 0 : dp >= 0; tail = ` · <b class="${good ? "rp" : "rn"}">${dp >= 0 ? "+" : "−"}${nf(1).format(Math.abs(dp))} puan</b>`; }
     else if (m.abs) tail = me < 0 ? ` · <b class="rp">net nakit</b>` : ` · <b class="${me <= med ? "rp" : "rn"}">${me <= med ? "daha az borçlu" : "daha borçlu"}</b>`;
     else if (med > 0) { const pr = (me / med - 1) * 100; tail = ` · <b class="${pr <= 0 ? "rp" : "rn"}">%${nf(0).format(Math.abs(pr))} ${pr <= 0 ? "düşük" : "yüksek"} ${m.l}</b>`; }
   }
@@ -819,7 +914,7 @@ function renderRelative(d) {
     return;
   }
   const valid = (m, v) => v != null && isFinite(v) && !(m.pos && v < 0);
-  const rows = REL.map(m => {
+  const rows = relSet(d).map(m => {
     const me = d[m.k];
     const vals = peers.filter(s=>peerValid(s,m)).map(s => s[m.k]).filter(v => valid(m, v));
     const all = state.stocks.filter(s=>peerValid(s,m)).map(s => s[m.k]).filter(v => valid(m, v));
@@ -837,7 +932,8 @@ function renderRelative(d) {
       const rank = better + 1;
       if (m.margin) {
         const diff = (me - med) * 100;
-        txt = `<b class="${diff >= 0 ? "good" : "bad"}">${diff >= 0 ? "+" : "−"}${nf(1).format(Math.abs(diff))} puan</b> grup medyanına göre · ${sorted.length} şirket içinde ${rank}. en yüksek`;
+        const good = m.inv ? diff <= 0 : diff >= 0;
+        txt = `<b class="${good ? "good" : "bad"}">${diff >= 0 ? "+" : "−"}${nf(1).format(Math.abs(diff))} puan</b> grup medyanına göre · ${sorted.length} şirket içinde ${rank}. ${m.low ? "en düşük" : "en yüksek"}`;
       } else if (m.abs) {
         txt = me < 0 ? `<b class="good">Net nakit</b> · grup medyanı ${m.fmt(med)} · ${sorted.length} şirket içinde ${rank}. en az borçlu`
                      : `Grup medyanı ${m.fmt(med)} · <b class="${me <= med ? "good" : "bad"}">${me <= med ? "gruptan az borçlu" : "gruptan borçlu"}</b> · ${sorted.length} şirket içinde ${rank}. en az borçlu`;
@@ -890,6 +986,9 @@ const METRICS = [
   { k: "net_growth", l: "Net kâr büyümesi", mul: 100, unit: "%" },
   { k: "market_cap", l: "Piyasa değeri", mul: 1e-9, unit: "mlr ₺" },
   { k: "price", l: "Fiyat", unit: "₺" },
+  { k: "combined_ratio_ttm", l: "Bileşik rasyo (sigorta)", mul: 100, unit: "%" },
+  { k: "roe", l: "ROE (sigorta)", mul: 100, unit: "%" },
+  { k: "gwp_growth", l: "Prim büyümesi (sigorta)", mul: 100, unit: "%" },
 ];
 const METRIC = Object.fromEntries(METRICS.map(m => [m.k, m]));
 const OPS = ["<", "≤", ">", "≥"];
