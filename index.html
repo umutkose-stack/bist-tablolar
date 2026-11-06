@@ -171,6 +171,16 @@ td.first .fc{display:flex;align-items:flex-start;gap:4px}
 .cmode{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:28px 0 0;font-size:12px}
 /* karşılaştırma */
 #compare{display:none}
+#tbl th.act,#tbl td.act{position:sticky;right:0;z-index:1;background:var(--bg);text-align:center;cursor:default;padding-left:6px;padding-right:8px;border-left:1px solid var(--rule)}
+#tbl th.act{z-index:2;cursor:default;font-size:10px}
+#tbl tbody tr:hover td.act{background:var(--bg)}
+.actw{display:flex;gap:10px;justify-content:center}
+.abtn{width:34px;height:34px;border-radius:6px;border:1px solid var(--rule);background:transparent;color:var(--muted);font:500 17px/1 var(--sans);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+.abtn:hover{border-color:var(--ink);color:var(--ink)}
+.abtn.fav.on{color:var(--accent);border-color:var(--accent)}
+.abtn.cmpb.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.abtn:disabled{opacity:.35;cursor:not-allowed}
+.abtn:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .cmp{appearance:none;-webkit-appearance:none;width:16px;height:16px;border:1px solid var(--ink);border-radius:3px;margin:1px 4px 0 0;cursor:pointer;flex:none;position:relative;background:transparent}
 .cmp:checked{background:var(--ink)}
 .cmp:checked::after{content:"";position:absolute;left:4px;top:1px;width:5px;height:9px;border:solid var(--bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
@@ -414,7 +424,8 @@ const COLS_INS = [
 const listCols = () => secSel === "Sigorta" ? COLS_INS : COLS_GENERAL;
 function renderHead() {
   $("#tblHead").innerHTML = `<tr><th data-k="symbol">Hisse</th><th data-k="price" class="n c-price">Fiyat</th><th data-k="market_cap" class="n">Piy.<br>Değeri</th><th data-k="pe" class="n">F/K</th><th data-k="pb" class="n">PD/DD</th>` +
-    listCols().map(c => `<th data-k="${c.k}" class="n"${c.t ? ` title="${c.t}"` : ""}>${c.h}</th>`).join("") + `</tr>`;
+    listCols().map(c => `<th data-k="${c.k}" class="n"${c.t ? ` title="${c.t}"` : ""}>${c.h}</th>`).join("") +
+    `<th class="act" title="☆ favori · + karşılaştır">Favori<br>Kıyas</th></tr>`;
 }
 const pct = v => v == null ? "—" : (v < 0 ? "−%" : "%") + nf(1).format(Math.abs(v * 100));
 const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
@@ -503,15 +514,19 @@ function renderList() {
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
-      <td class="first"><div class="fc"><input type="checkbox" class="cmp" data-cmp="${s.symbol}" aria-label="${s.symbol} karşılaştır"${cmpSel.includes(s.symbol) ? " checked" : (cmpSel.length >= 3 ? " disabled" : "")}><button class="star ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" title="Favori">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
+      <td class="first"><div class="fc"><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
       <td class="n c-price">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${metricHtml(s, "pe", mult)}</td>
       <td class="n">${metricHtml(s, "pb", mult)}</td>
       ${listCols().map(c => `<td class="n ${c.cls ? c.cls(s) : ""}">${metricHtml(s, c.k, c.f, val(s, c.k))}</td>`).join("")}
+      <td class="act" data-act><div class="actw">
+        <button type="button" class="abtn fav ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" aria-pressed="${favs.has(s.symbol)}" aria-label="${s.symbol} favori" title="${favs.has(s.symbol) ? "Favorilerden çıkar" : "Favorilere ekle"}">${favs.has(s.symbol) ? "★" : "☆"}</button>
+        <button type="button" class="abtn cmpb ${cmpSel.includes(s.symbol) ? "on" : ""}" data-cmp="${s.symbol}" aria-pressed="${cmpSel.includes(s.symbol)}" aria-label="${s.symbol} karşılaştır" title="${cmpSel.includes(s.symbol) ? "Karşılaştırmadan çıkar" : (cmpSel.length >= 3 ? "En fazla 3 hisse" : "Karşılaştırmaya ekle")}"${!cmpSel.includes(s.symbol) && cmpSel.length >= 3 ? " disabled" : ""}>${cmpSel.includes(s.symbol) ? "✓" : "+"}</button>
+      </div></td>
     </tr>`).join("");
   if (!rows.length && view === "fav" && !favs.size)
-    $("#tbl tbody").innerHTML = `<tr><td colspan="10" class="empty">Henüz favorin yok. "Tümü"ne geçip hisselerin yanındaki ☆ işaretine dokun.</td></tr>`;
+    $("#tbl tbody").innerHTML = `<tr><td colspan="11" class="empty">Henüz favorin yok. "Tümü"ne geçip satırın sağındaki ☆ düğmesine dokun.</td></tr>`;
   document.querySelectorAll("#tbl th").forEach(th => th.classList.toggle("sorted", th.dataset.k === k));
   const tw = $("#tbl").parentElement; $("#hint").classList.toggle("show", tw.scrollWidth > tw.clientWidth + 4);
   $("#count").innerHTML = `${rows.length} / ${state.stocks.length} hisse · Eksik değerler sıfır sayılmaz; sayısal filtrelere dahil edilmez.` + (active.length ? `<details class="filter-report"><summary>Filtre dışında kalanlar (${[...exclusions.values()].reduce((n,a)=>n+a.length,0)})</summary><p>Arama, sektör ve favori kapsamındaki şirketler için ilk sağlanmayan kriter gösterilir; her şirket bir kez sayılır.</p>${[...exclusions].map(([why,syms])=>`<p><b>${esc(why)}</b> · ${syms.length} şirket<br>${syms.map(esc).join(", ")}</p>`).join("")}</details>` : "");
@@ -706,6 +721,7 @@ $("#tbl tbody").addEventListener("click", e => {
   if (sg) { e.stopPropagation(); setSector(secSel === sg.dataset.sec ? "" : sg.dataset.sec); return; }
   const st = e.target.closest("[data-fav]");
   if (st) { e.stopPropagation(); toggleFav(st.dataset.fav); renderList(); return; }
+  if (e.target.closest("[data-act]")) return;          // işlem sütununda boşluk: hiçbir şey yapma
   const tr = e.target.closest("tr[data-s]"); if (tr) location.hash = tr.dataset.s;
 });
 $("#fToggle").addEventListener("click", () => { $("#more").classList.toggle("open"); markActiveFilters(); });
