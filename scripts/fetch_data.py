@@ -440,14 +440,18 @@ def process(symbol: str, name: str = "") -> dict | None:
     # Piyasa değeri ve İş Yatırım'ın hesapladığı oranlar
     metrics = company_metrics(t._get_isyatirim(), symbol)  # noqa: SLF001
     mcap = clean(metrics.get("market_cap"))
-    price, price_time = None, None
+    price, price_time, price_kind = None, None, None
     try:  # önce İş Yatırım'ın hızlı fiyat servisi
         import warnings
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             qd = t._get_isyatirim().get_realtime_quote(symbol)  # noqa: SLF001
         # Seans öncesi/sonrası "last" 0 gelebilir: o zaman önceki kapanışı kullan
-        price = clean(qd.get("last")) or clean(qd.get("close")) or None
+        price = clean(qd.get("last")) or None
+        price_kind = "last" if price else None
+        if not price:
+            price = clean(qd.get("close")) or None
+            price_kind = "prev_close" if price else None
         ut = qd.get("update_time")
         if price and ut is not None:
             price_time = ut.isoformat(timespec="minutes") if hasattr(ut, "isoformat") else str(ut)
@@ -460,6 +464,7 @@ def process(symbol: str, name: str = "") -> dict | None:
             ex.shutdown(wait=False)
             if price:
                 price_time = datetime.now(timezone.utc).isoformat(timespec="minutes")
+                price_kind = "last"
         except (FutTimeout, Exception):  # noqa: BLE001
             pass
 
@@ -490,6 +495,7 @@ def process(symbol: str, name: str = "") -> dict | None:
         "last_period": cols[0],
         "price": price,
         "price_at": price_time,
+        "price_kind": price_kind,   # "last" = son işlem fiyatı, "prev_close" = önceki seans kapanışı
         "fetched_at": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "equity": last_equity,
         "net_ttm_prev": net_ttm_prev,

@@ -517,7 +517,7 @@ async function renderDetail(sym) {
   $("#dSym").textContent = d.symbol; paintStar(d.symbol);
   $("#dName").textContent = (d.name || "") + (d.group === "banka" ? " · banka formatı" : "");
   $("#dPrice").textContent = (d.price != null ? nf(2).format(d.price) + " ₺ · " : "") + "Piy. değ. " + money(d.market_cap);
-  $("#dataDates").innerHTML = `<div><b>Fiyat tarihi</b>${esc(DataContext.date(d.price_at || d.price_date))}</div><div><b>Son bilanço dönemi</b>${per(d.last_period)}</div><div><b>Şirket verisi çekilme zamanı</b>${esc(DataContext.date(d.fetched_at))}</div><div><b>Veri paketi hazırlanma zamanı</b>${esc(DataContext.date(state.updatedAt))}</div>`;
+  $("#dataDates").innerHTML = `<div><b>Fiyat tarihi</b>${d.price_kind === "prev_close" ? `Önceki seans kapanışı <span class="dim">(kaynak ${esc(DataContext.date(d.price_at))} itibarıyla)</span>` : esc(DataContext.date(d.price_at || d.price_date))}</div><div><b>Son bilanço dönemi</b>${per(d.last_period)}</div><div><b>Şirket verisi çekilme zamanı</b>${esc(DataContext.date(d.fetched_at))}</div><div><b>Veri paketi hazırlanma zamanı</b>${esc(DataContext.date(state.updatedAt))}</div>`;
   const tile = (k, v, s, cls = "", rk = null) => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div>${rk ? relLine(d, rk) : ""}</div>`;
   $("#dEyebrow").textContent = [d.sector || (d.group === "banka" ? "Banka" : null), d.sector_main && d.sector_main !== d.sector ? d.sector_main : null, "son bilanço " + per(d.last_period)].filter(Boolean).join(" · ");
   $("#band").innerHTML =
