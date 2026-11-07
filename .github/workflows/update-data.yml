@@ -33,11 +33,20 @@ jobs:
       - run: python scripts/fetch_data.py ${{ github.event.inputs.symbols }}
         env:
           PYTHONUNBUFFERED: "1"
+      - name: Veri kontrolü (bozuk veri yayımlanmasın)
+        id: check
+        run: python scripts/check_data.py
       - name: Değişiklikleri kaydet
         run: |
           git config user.name "veri-botu"
           git config user.email "actions@users.noreply.github.com"
           git add data
-          git diff --cached --quiet || git commit -m "Veri güncellemesi $(date -u +%F)"
+          if [ "${{ steps.check.outputs.blocked }}" = "true" ]; then MSG="Veri kontrolü: yeni veri ENGELLENDİ $(date -u +%F)"; else MSG="Veri güncellemesi $(date -u +%F)"; fi
+          git diff --cached --quiet || git commit -m "$MSG"
           git pull --rebase origin main
           git push
+      - name: Engellendiyse çalışmayı başarısız say (bildirim için)
+        if: steps.check.outputs.blocked == 'true'
+        run: |
+          echo "::error::Veri kontrolü yeni veriyi engelledi; site önceki veriyle kaldı. Ayrıntı: data/data_check.json"
+          exit 1

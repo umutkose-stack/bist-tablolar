@@ -61,6 +61,14 @@ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
 
 .banner{border:1px solid var(--accent);color:var(--ink);padding:10px 14px;border-radius:6px;font-size:14px;margin-bottom:16px}
 .banner b{color:var(--accent)}
+.banner.qc{border-color:var(--accent)}
+.banner.qc.bad{border-color:var(--neg)}
+.banner.qc.bad b{color:var(--neg)}
+.banner.qc ul{margin:8px 0 0;padding-left:18px;max-height:220px;overflow:auto}
+.banner.qc li{margin:2px 0;font-size:13px}
+.banner.qc a{color:var(--ink)}
+.banner.qc summary{cursor:pointer}
+.qcw{color:var(--accent);margin-left:5px;font-size:12px;cursor:help}
 .panel{border:1px solid var(--ink);border-radius:8px;background:transparent}
 
 /* kontroller */
@@ -273,6 +281,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
     <a class="logo" href="#">bist tablolar<b>.</b></a>
     <div class="meta" id="updated"></div>
   </header>
+  <div class="banner qc" id="qcBanner" hidden></div>
   <div class="banner" id="demoBanner" hidden>
     <b>Örnek veri.</b> Gerçek veriler, otomatik güncelleme ilk kez çalışıp <code>data/</code> klasörünü doldurduğunda burada görünür.
   </div>
@@ -328,6 +337,7 @@ footer{border-top:1px solid var(--ink);margin-top:40px;padding-top:14px;font-siz
     <button class="back" onclick="location.hash=''">← Tüm hisseler</button>
     <div class="dhead"><div><p class="eyebrow" id="dEyebrow">Hisse</p><h2><button class="star" id="dStar" title="Favorilere ekle/çıkar">☆</button><span id="dSym"></span></h2><div class="meta" id="dName"></div></div><div class="dright"><div class="meta num" id="dPrice"></div><button type="button" class="ghost sm" id="dCmp">+ Karşılaştırmaya ekle</button></div></div>
     <div class="label"><span>01 / Temel oranlar</span><span class="r">son 12 ay</span></div>
+    <div class="banner qc" id="dQc" hidden></div>
     <div class="data-dates" id="dataDates"></div>
     <div class="band" id="band"></div>
     <div class="label"><span>02 / Sektörle kıyas</span><span class="r" id="relR"></span></div>
@@ -432,6 +442,26 @@ const sign = v => v == null ? "dim" : v < 0 ? "neg" : "pos";
 const per = p => p ? p.replace(/(\d{4})Q(\d)/, (_, y, q) => `${y}/${q * 3}`) : "—";
 
 /* ---------- veri ---------- */
+/* ---------- veri kontrolü raporu (scripts/check_data.py) ---------- */
+state.qc = null; state.qcBy = {};
+async function loadCheck() {
+  try {
+    const r = await fetch("data/data_check.json", { cache: "no-store" });
+    if (!r.ok) return;
+    const q = await r.json(); state.qc = q;
+    state.qcBy = {};
+    (q.warnings || []).forEach(w => (state.qcBy[w.symbol] = state.qcBy[w.symbol] || []).push(w.text));
+    const b = $("#qcBanner");
+    if (q.status === "blocked") {
+      b.innerHTML = `<b>Son veri çekmede şüpheli sonuç bulundu ve yayımlanmadı</b> (${esc(DataContext.date(q.checked_at))}). Sitedeki rakamlar önceki güncellemeye ait: ${esc(DataContext.date(q.previous_updated_at))}.<br><span class="dim">Sebep: ${q.blocks.map(esc).join(" · ")}</span>`;
+      b.hidden = false; b.classList.add("bad");
+    } else if (q.warning_count) {
+      const list = (q.warnings || []).map(w => `<li><a href="#${esc(w.symbol)}">${esc(w.symbol)}</a> — ${esc(w.text)}</li>`).join("");
+      b.innerHTML = `<details><summary><b>Son güncellemede ${q.warning_count} hissede olağandışı değişim var</b> — rakamlar yayımlandı ama kontrol etmen önerilir. <span class="dim">(listeyi aç)</span></summary><ul>${list}</ul></details>`;
+      b.hidden = false;
+    }
+  } catch {}
+}
 async function load() {
   try {
     const r = await fetch("data/summary.json", { cache: "no-store" });
@@ -445,6 +475,7 @@ async function load() {
     $("#updated").textContent = "Örnek veri";
   }
   $("#demoBanner").hidden = !state.demo;
+  await loadCheck();
   fillSectors();
   route();
 }
@@ -514,7 +545,7 @@ function renderList() {
   });
   $("#tbl tbody").innerHTML = rows.map(s => `
     <tr data-s="${s.symbol}">
-      <td class="first"><div class="fc"><button type="button" class="abtn fav ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" aria-pressed="${favs.has(s.symbol)}" aria-label="${s.symbol} favori" title="${favs.has(s.symbol) ? "Favorilerden çıkar" : "Favorilere ekle"}">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span><span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
+      <td class="first"><div class="fc"><button type="button" class="abtn fav ${favs.has(s.symbol) ? "on" : ""}" data-fav="${s.symbol}" aria-pressed="${favs.has(s.symbol)}" aria-label="${s.symbol} favori" title="${favs.has(s.symbol) ? "Favorilerden çıkar" : "Favorilere ekle"}">${favs.has(s.symbol) ? "★" : "☆"}</button><div><span class="sym">${s.symbol}</span>${state.qcBy[s.symbol] ? `<span class="qcw" title="${esc(state.qcBy[s.symbol].join(" · "))}">⚠</span>` : ""}<span class="per" title="Son bilanço dönemi">${per(s.last_period)}</span><span class="nm">${s.sector ? `<button type="button" class="stag" data-sec="${esc(s.sector)}" title="Bu sektörü göster">${esc(s.sector)}</button>` : (s.group === "banka" ? '<span class="stag">Banka</span>' : "")}${esc(s.name || "")}</span></div></div></td>
       <td class="n c-price">${s.price == null ? "—" : nf(2).format(s.price)}</td>
       <td class="n">${money(s.market_cap)}</td>
       <td class="n">${metricHtml(s, "pe", mult)}</td>
@@ -535,7 +566,10 @@ function renderList() {
 async function renderDetail(sym) {
   let d;
   try { d = await getDetail(sym); } catch (e) { alert(e.message); location.hash = ""; return; }
-  $("#dSym").textContent = d.symbol; paintStar(d.symbol);
+  $("#dSym").textContent = d.symbol;
+  const qw = state.qcBy[d.symbol];
+  $("#dQc").hidden = !qw;
+  if (qw) $("#dQc").innerHTML = `<b>Son güncellemede bu hissede olağandışı değişim tespit edildi:</b> ${qw.map(esc).join(" · ")}. Rakamları kaynak raporla karşılaştırman önerilir.`; paintStar(d.symbol);
   $("#dName").textContent = (d.name || "") + (d.group === "banka" ? " · banka formatı" : "");
   $("#dPrice").textContent = (d.price != null ? nf(2).format(d.price) + " ₺ · " : "") + "Piy. değ. " + money(d.market_cap);
   $("#dataDates").innerHTML = `<div><b>Fiyat tarihi</b>${d.price_kind === "prev_close" ? `Önceki seans kapanışı <span class="dim">(kaynak ${esc(DataContext.date(d.price_at))} itibarıyla)</span>` : esc(DataContext.date(d.price_at || d.price_date))}</div><div><b>Son bilanço dönemi</b>${per(d.last_period)}</div><div><b>Şirket verisi çekilme zamanı</b>${esc(DataContext.date(d.fetched_at))}</div><div><b>Veri paketi hazırlanma zamanı</b>${esc(DataContext.date(state.updatedAt))}</div>`;
