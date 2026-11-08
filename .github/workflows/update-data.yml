@@ -22,21 +22,40 @@ jobs:
     timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
+      - name: Yedek zamanlama - veri tazeyse atla
+        id: fresh
+        if: github.event_name == 'schedule'
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          d = json.load(open("data/summary.json"))
+          age = (datetime.now(timezone.utc) - datetime.fromisoformat(d["updated_at"])).total_seconds() / 3600
+          skip = age < 12
+          print(f"Son başarılı güncelleme {age:.1f} saat önce ({d['updated_at']}). " + ("Veri taze, bu yedek çalışma atlanıyor." if skip else "Veri eski, yedek çalışma güncelliyor."))
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"skip={'true' if skip else 'false'}\n")
+          PY
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -r requirements.txt
+        if: steps.fresh.outputs.skip != 'true'
       - name: Testler (hesap kuralları bozulduysa veriyi güncelleme)
+        if: steps.fresh.outputs.skip != 'true'
         run: |
           python -m unittest discover -s tests -p "test_*.py"
           node --test tests/data-context.test.cjs
       - run: python scripts/fetch_data.py ${{ github.event.inputs.symbols }}
+        if: steps.fresh.outputs.skip != 'true'
         env:
           PYTHONUNBUFFERED: "1"
       - name: Veri kontrolü (bozuk veri yayımlanmasın)
+        if: steps.fresh.outputs.skip != 'true'
         id: check
         run: python scripts/check_data.py
       - name: Değişiklikleri kaydet
+        if: steps.fresh.outputs.skip != 'true'
         run: |
           git config user.name "veri-botu"
           git config user.email "actions@users.noreply.github.com"
@@ -46,7 +65,7 @@ jobs:
           git pull --rebase origin main
           git push
       - name: Engellendiyse çalışmayı başarısız say (bildirim için)
-        if: steps.check.outputs.blocked == 'true'
+        if: steps.fresh.outputs.skip != 'true' && steps.check.outputs.blocked == 'true'
         run: |
           echo "::error::Veri kontrolü yeni veriyi engelledi; site önceki veriyle kaldı. Ayrıntı: data/data_check.json"
           exit 1
