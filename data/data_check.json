@@ -1,27 +1,22 @@
 {
- "checked_at": "2026-11-08T11:10+00:00",
+ "checked_at": "2026-11-08T19:29+00:00",
  "status": "warn",
  "blocks": [],
  "warnings": [
   {
-   "symbol": "BOSSA",
-   "kind": "period_back",
-   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
-  },
-  {
-   "symbol": "MERCN",
+   "symbol": "BIMAS",
    "kind": "period_back",
    "text": "Son bilanço dönemi geriye gitti (2026Q2 → 2025Q3)"
   },
   {
-   "symbol": "SKYLP",
+   "symbol": "GSRAY",
    "kind": "period_back",
-   "text": "Son bilanço dönemi geriye gitti (2026Q2 → 2025Q3)"
+   "text": "Son bilanço dönemi geriye gitti (2026Q1 → 2025Q3)"
   }
  ],
- "warning_count": 3,
+ "warning_count": 2,
  "new_count": 566,
  "previous_count": 566,
- "previous_updated_at": "2026-11-07T19:13+00:00",
+ "previous_updated_at": "2026-11-08T11:10+00:00",
  "rejected_updated_at": null
 }
