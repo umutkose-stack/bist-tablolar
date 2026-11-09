@@ -1,22 +1,11 @@
 {
- "checked_at": "2026-11-08T19:29+00:00",
- "status": "warn",
+ "checked_at": "2026-11-09T12:32+00:00",
+ "status": "ok",
  "blocks": [],
- "warnings": [
-  {
-   "symbol": "BIMAS",
-   "kind": "period_back",
-   "text": "Son bilanço dönemi geriye gitti (2026Q2 → 2025Q3)"
-  },
-  {
-   "symbol": "GSRAY",
-   "kind": "period_back",
-   "text": "Son bilanço dönemi geriye gitti (2026Q1 → 2025Q3)"
-  }
- ],
- "warning_count": 2,
+ "warnings": [],
+ "warning_count": 0,
  "new_count": 566,
  "previous_count": 566,
- "previous_updated_at": "2026-11-08T11:10+00:00",
+ "previous_updated_at": "2026-11-08T19:29+00:00",
  "rejected_updated_at": null
 }
