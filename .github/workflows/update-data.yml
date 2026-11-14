@@ -31,7 +31,7 @@ jobs:
           from datetime import datetime, timezone
           d = json.load(open("data/summary.json"))
           age = (datetime.now(timezone.utc) - datetime.fromisoformat(d["updated_at"])).total_seconds() / 3600
-          skip = age < 12
+          skip = age < 26   # gece görevi 24 saatte bir çalışır; yedek yalnızca bir gece kaçarsa devreye girsin
           print(f"Son başarılı güncelleme {age:.1f} saat önce ({d['updated_at']}). " + ("Veri taze, bu yedek çalışma atlanıyor." if skip else "Veri eski, yedek çalışma güncelliyor."))
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"skip={'true' if skip else 'false'}\n")
