@@ -1,11 +1,49 @@
 {
- "checked_at": "2026-11-13T19:18+00:00",
- "status": "ok",
- "blocks": [],
- "warnings": [],
- "warning_count": 0,
+ "checked_at": "2026-11-14T11:04+00:00",
+ "status": "blocked",
+ "blocks": [
+  "Çekilemeyen hisse sayısı 14 → 232."
+ ],
+ "warnings": [
+  {
+   "symbol": "MCARD",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "MERCN",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "METEN",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2023Q4)"
+  },
+  {
+   "symbol": "MEYSU",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "MOGAN",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "MRGYO",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q2 → 2025Q3)"
+  },
+  {
+   "symbol": "MRSHL",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  }
+ ],
+ "warning_count": 7,
  "new_count": 566,
  "previous_count": 566,
- "previous_updated_at": "2026-11-13T12:05+00:00",
- "rejected_updated_at": null
+ "previous_updated_at": "2026-11-13T19:18+00:00",
+ "rejected_updated_at": "2026-11-14T11:04+00:00"
 }
