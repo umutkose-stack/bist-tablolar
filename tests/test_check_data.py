@@ -60,6 +60,29 @@ class CheckDataTests(unittest.TestCase):
         new = pkg([stock(f"S{i}", last_period="2026Q2" if i < 10 else "2026Q3") for i in range(100)], 14)
         self.assertTrue(any("geriye" in b for b in cd.check(new, OLD)["blocks"]))
 
+    def test_split_with_stable_market_cap_is_note_not_warning(self):
+        # FLAP 23.11.2026: %326,67 bedelsiz -> fiyat 10,59 -> 2,55, piyasa değeri ~aynı
+        new = pkg([stock(f"S{i}", price=2.55, market_cap=1.02e9) if i == 5 else stock(f"S{i}") for i in range(100)], 14)
+        r = cd.check(new, OLD)
+        self.assertEqual(r["warnings"], [])
+        self.assertEqual([(n["symbol"], n["kind"]) for n in r["notes"]], [("S5", "split")])
+
+    def test_price_and_market_cap_both_jump_still_warns(self):
+        new = pkg([stock(f"S{i}", price=2.5, market_cap=2.5e8) if i == 5 else stock(f"S{i}") for i in range(100)], 14)
+        r = cd.check(new, OLD)
+        self.assertEqual([w["kind"] for w in r["warnings"]], ["price_jump"])
+        self.assertEqual(r["notes"], [])
+
+    def test_price_rise_with_stable_market_cap_still_warns(self):
+        new = pkg([stock(f"S{i}", price=40.0) if i == 5 else stock(f"S{i}") for i in range(100)], 14)
+        r = cd.check(new, OLD)
+        self.assertEqual([w["kind"] for w in r["warnings"]], ["price_jump"])
+        self.assertEqual(r["notes"], [])
+
+    def test_market_cap_jump_with_stable_price_warns(self):
+        new = pkg([stock(f"S{i}", market_cap=4.3e9) if i == 5 else stock(f"S{i}") for i in range(100)], 14)
+        self.assertEqual([w["kind"] for w in cd.check(new, OLD)["warnings"]], ["market_cap_jump"])
+
     def test_no_previous_is_not_blocking(self):
         self.assertEqual(cd.check(OLD, None)["blocks"], [])
 

@@ -31,6 +31,7 @@ MAX_PERIOD_BACK = 0.05        # son bilanço dönemi GERİYE giden hisse oranı 
 MAX_NEW_FAILED = 20           # çekilemeyen hisse sayısı 20'den fazla artarsa engel
 PRICE_JUMP = 0.40             # tek hissede fiyat/piyasa değeri %40'tan fazla değişirse uyarı
 REVENUE_JUMP = 3.0            # bilanço dönemi aynıyken 12 aylık satış 3 kattan fazla değişirse uyarı
+SPLIT_MCAP_TOL = 0.25         # fiyat sert değişip piyasa değeri bu kadar sabit kalırsa: bedelsiz/bölünme, uyarı değil bilgi
 
 
 def frac(stocks, pred):
@@ -44,13 +45,13 @@ def rel_change(a, b):
 
 
 def check(new: dict, old: dict | None) -> dict:
-    blocks, warns = [], []
+    blocks, warns, notes = [], [], []
     N, O = new.get("stocks") or [], (old or {}).get("stocks") or []
     if not N:
         blocks.append("Yeni veride hiç hisse yok.")
-        return {"blocks": blocks, "warnings": warns}
+        return {"blocks": blocks, "warnings": warns, "notes": notes}
     if not O:
-        return {"blocks": blocks, "warnings": warns, "note": "Kıyaslanacak önceki veri yok."}
+        return {"blocks": blocks, "warnings": warns, "notes": notes, "note": "Kıyaslanacak önceki veri yok."}
 
     # --- genel (engelleyen) kontroller
     if len(N) < MIN_COUNT_RATIO * len(O):
@@ -78,12 +79,20 @@ def check(new: dict, old: dict | None) -> dict:
             back += 1
             warns.append({"symbol": sym, "kind": "period_back",
                           "text": f"Son bilanço dönemi geriye gitti ({p['last_period']} → {s['last_period']})"})
-        for key, label in (("price", "Fiyat"), ("market_cap", "Piyasa değeri")):
-            ch = rel_change(s.get(key), p.get(key))
-            if ch is not None and abs(ch) > PRICE_JUMP:
-                warns.append({"symbol": sym, "kind": key + "_jump",
-                              "text": f"{label} bir günde %{ch*100:+.0f} değişti ({p[key]:,.2f} → {s[key]:,.2f})".replace(",", "X").replace(".", ",").replace("X", ".")})
-                break
+        pc, mc = rel_change(s.get("price"), p.get("price")), rel_change(s.get("market_cap"), p.get("market_cap"))
+        if pc is not None and pc < -PRICE_JUMP and mc is not None and abs(mc) <= SPLIT_MCAP_TOL:
+            # Fiyat sert düştü ama piyasa değeri (İş Yatırım, ayrı kaynak) aynı: pay sayısı artmış,
+            # yani bedelsiz sermaye artırımı / bölünme. Yalnızca düşüşe bakılır; fiyatın sert
+            # yükselmesi bölünmeyle açıklanamaz, uyarı olarak kalır.
+            notes.append({"symbol": sym, "kind": "split",
+                          "text": f"Muhtemel bedelsiz/bölünme: fiyat %{pc*100:+.0f}, piyasa değeri %{mc*100:+.0f}"})
+        else:
+            for key, label in (("price", "Fiyat"), ("market_cap", "Piyasa değeri")):
+                ch = rel_change(s.get(key), p.get(key))
+                if ch is not None and abs(ch) > PRICE_JUMP:
+                    warns.append({"symbol": sym, "kind": key + "_jump",
+                                  "text": f"{label} bir günde %{ch*100:+.0f} değişti ({p[key]:,.2f} → {s[key]:,.2f})".replace(",", "X").replace(".", ",").replace("X", ".")})
+                    break
         if s.get("last_period") == p.get("last_period"):
             a, b = s.get("revenue_ttm"), p.get("revenue_ttm")
             if a and b and a > 0 and b > 0 and (a / b > REVENUE_JUMP or b / a > REVENUE_JUMP):
@@ -93,7 +102,7 @@ def check(new: dict, old: dict | None) -> dict:
             warns.append({"symbol": sym, "kind": "price_lost", "text": "Fiyat dün vardı, bugün gelmedi"})
     if back / len(N) > MAX_PERIOD_BACK:
         blocks.append(f"{back} hissede son bilanço dönemi geriye gitti.")
-    return {"blocks": blocks, "warnings": warns}
+    return {"blocks": blocks, "warnings": warns, "notes": notes}
 
 
 def load_previous(path: str | None) -> dict | None:
@@ -128,6 +137,7 @@ def main():
         "blocks": res["blocks"],
         "warnings": res["warnings"][:200],
         "warning_count": len(res["warnings"]),
+        "notes": res["notes"][:200],
         "new_count": len(new.get("stocks") or []),
         "previous_count": len((old or {}).get("stocks") or []),
         "previous_updated_at": (old or {}).get("updated_at"),
@@ -143,6 +153,8 @@ def main():
         print(f"KONTROL: tamam ({report['new_count']} hisse, {report['warning_count']} uyarı)")
     for w in res["warnings"][:40]:
         print(f"  UYARI - {w['symbol']}: {w['text']}")
+    for n in res["notes"][:40]:
+        print(f"  BİLGİ - {n['symbol']}: {n['text']}")
     if len(res["warnings"]) > 40:
         print(f"  UYARI - ... ve {len(res['warnings']) - 40} uyarı daha")
     (DATA / "data_check.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
