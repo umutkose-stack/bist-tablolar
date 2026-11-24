@@ -1,17 +1,125 @@
 {
- "checked_at": "2026-11-23T19:25+00:00",
- "status": "warn",
- "blocks": [],
+ "checked_at": "2026-11-24T19:45+00:00",
+ "status": "blocked",
+ "blocks": [
+  "Çekilemeyen hisse sayısı 14 → 44."
+ ],
  "warnings": [
   {
-   "symbol": "FLAP",
-   "kind": "price_jump",
-   "text": "Fiyat bir günde %-76 değişti (10,59 → 2,55)"
+   "symbol": "AKSA",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "AKSEN",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "AKSUE",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "AKYHO",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ALARK",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ARCLK",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "ARDYZ",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "ARENA",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q2 → 2025Q3)"
+  },
+  {
+   "symbol": "ARFYE",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ASELS",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "ASGYO",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "ASTOR",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ASUZU",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ATAGY",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ATAKP",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "ATATP",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "AYEN",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "BAGFS",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2024Q3)"
+  },
+  {
+   "symbol": "BALSU",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q1 → 2025Q3)"
+  },
+  {
+   "symbol": "DOHOL",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "KRGYO",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
+  },
+  {
+   "symbol": "VERUS",
+   "kind": "period_back",
+   "text": "Son bilanço dönemi geriye gitti (2026Q3 → 2025Q3)"
   }
  ],
- "warning_count": 1,
+ "warning_count": 22,
+ "notes": [],
  "new_count": 564,
- "previous_count": 566,
- "previous_updated_at": "2026-11-22T19:13+00:00",
- "rejected_updated_at": null
+ "previous_count": 564,
+ "previous_updated_at": "2026-11-23T19:25+00:00",
+ "rejected_updated_at": "2026-11-24T19:45+00:00"
 }
