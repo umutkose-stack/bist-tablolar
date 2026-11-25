@@ -1,12 +1,18 @@
 {
- "checked_at": "2026-11-24T20:03+00:00",
- "status": "ok",
+ "checked_at": "2026-11-25T19:25+00:00",
+ "status": "warn",
  "blocks": [],
- "warnings": [],
- "warning_count": 0,
+ "warnings": [
+  {
+   "symbol": "MIATK",
+   "kind": "market_cap_jump",
+   "text": "Piyasa değeri bir günde %+92 değişti (11.342.200.000,00 → 21.742.800.000,00)"
+  }
+ ],
+ "warning_count": 1,
  "notes": [],
  "new_count": 564,
  "previous_count": 564,
- "previous_updated_at": "2026-11-23T19:25+00:00",
+ "previous_updated_at": "2026-11-24T20:03+00:00",
  "rejected_updated_at": null
 }
