@@ -1,18 +1,18 @@
 {
- "checked_at": "2026-11-26T19:18+00:00",
- "status": "warn",
+ "checked_at": "2026-11-27T19:14+00:00",
+ "status": "ok",
  "blocks": [],
- "warnings": [
+ "warnings": [],
+ "warning_count": 0,
+ "notes": [
   {
-   "symbol": "FRMPL",
-   "kind": "price_lost",
-   "text": "Fiyat dün vardı, bugün gelmedi"
+   "symbol": "PKART",
+   "kind": "split",
+   "text": "Muhtemel bedelsiz/bölünme: fiyat %-93, piyasa değeri %-6"
   }
  ],
- "warning_count": 1,
- "notes": [],
  "new_count": 564,
  "previous_count": 564,
- "previous_updated_at": "2026-11-25T19:25+00:00",
+ "previous_updated_at": "2026-11-26T19:18+00:00",
  "rejected_updated_at": null
 }
