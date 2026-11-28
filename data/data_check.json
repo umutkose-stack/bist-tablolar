@@ -1,18 +1,12 @@
 {
- "checked_at": "2026-11-27T19:14+00:00",
+ "checked_at": "2026-11-28T19:12+00:00",
  "status": "ok",
  "blocks": [],
  "warnings": [],
  "warning_count": 0,
- "notes": [
-  {
-   "symbol": "PKART",
-   "kind": "split",
-   "text": "Muhtemel bedelsiz/bölünme: fiyat %-93, piyasa değeri %-6"
-  }
- ],
+ "notes": [],
  "new_count": 564,
  "previous_count": 564,
- "previous_updated_at": "2026-11-26T19:18+00:00",
+ "previous_updated_at": "2026-11-27T19:14+00:00",
  "rejected_updated_at": null
 }
